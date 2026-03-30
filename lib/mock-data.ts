@@ -41,38 +41,69 @@ export function generateDdubData(): DdubIndexData[] {
   return data
 }
 
-// Mock trades
+// Mock trades — Polymarket prediction market style
 export function generateTrades(): Trade[] {
-  const symbols = ['ES', 'NQ', 'SPY', 'QQQ', 'AAPL', 'TSLA', 'NVDA', 'AMZN']
-  const strategies = ['Momentum', 'Mean Reversion', 'Breakout', 'Scalp', 'Swing']
+  const markets = [
+    { symbol: 'Will BTC exceed $100K before June?', strategy: 'value_bet' },
+    { symbol: 'Will Harvey Weinstein sentence be extended?', strategy: 'value_bet' },
+    { symbol: 'Will Italy qualify for 2026 FIFA World Cup?', strategy: 'value_bet' },
+    { symbol: 'Will Sweden qualify for 2026 FIFA World Cup?', strategy: 'value_bet' },
+    { symbol: 'New Rihanna album before GTA VI?', strategy: 'value_bet' },
+    { symbol: 'Will Fed cut rates in May 2026?', strategy: 'copy_trading' },
+    { symbol: 'Will Trump sign new crypto bill in Q2?', strategy: 'copy_trading' },
+    { symbol: 'Will ETH flip BTC in market cap by 2027?', strategy: 'copy_trading' },
+    { symbol: 'Will Elon Musk leave DOGE by April?', strategy: 'copy_trading' },
+    { symbol: 'US recession declared before year end?', strategy: 'market_making' },
+  ]
   const trades: Trade[] = []
-  
-  for (let i = 0; i < 15; i++) {
-    const isWin = Math.random() > 0.28 // ~72% win rate
-    const type = Math.random() > 0.5 ? 'LONG' : 'SHORT'
-    const entry = 100 + Math.random() * 400
-    const pnlAmount = isWin ? Math.random() * 200 + 50 : -(Math.random() * 100 + 20)
-    const exit = type === 'LONG' 
-      ? entry + (pnlAmount / 10)
-      : entry - (pnlAmount / 10)
-    
+
+  // Open positions — paper mode, all hunting
+  markets.slice(0, 6).forEach((m, i) => {
+    const side = i % 3 === 0 ? 'SHORT' : 'LONG'
+    const entry = 0.06 + Math.random() * 0.55
     const timestamp = new Date()
-    timestamp.setHours(timestamp.getHours() - Math.floor(Math.random() * 48))
-    
+    timestamp.setHours(timestamp.getHours() - Math.floor(Math.random() * 8 + 1))
     trades.push({
-      id: `trade-${i + 1}`,
-      symbol: symbols[Math.floor(Math.random() * symbols.length)],
-      type,
-      entry: Math.round(entry * 100) / 100,
-      exit: i < 2 ? null : Math.round(exit * 100) / 100,
-      pnl: i < 2 ? 0 : Math.round(pnlAmount * 100) / 100,
-      status: i < 2 ? 'OPEN' : 'CLOSED',
+      id: `open-${i + 1}`,
+      symbol: m.symbol,
+      type: side,
+      entry: Math.round(entry * 1000) / 1000,
+      exit: null,
+      pnl: 0,
+      status: 'OPEN' as const,
       timestamp,
-      confidence: Math.round((0.6 + Math.random() * 0.35) * 100),
-      strategy: strategies[Math.floor(Math.random() * strategies.length)]
+      confidence: Math.round((0.68 + Math.random() * 0.15) * 100),
+      strategy: m.strategy,
     })
-  }
-  
+  })
+
+  // Closed trades — mixed results
+  const results = [
+    { pnl: 175.40, won: true },
+    { pnl: 92.15, won: true },
+    { pnl: -48.30, won: false },
+    { pnl: 210.00, won: true },
+  ]
+  markets.slice(6).forEach((m, i) => {
+    const r = results[i] || { pnl: 50, won: true }
+    const entry = 0.08 + Math.random() * 0.4
+    const exit = r.won ? Math.min(0.99, entry + 0.2 + Math.random() * 0.3) : Math.max(0.01, entry - 0.1 - Math.random() * 0.2)
+    const timestamp = new Date()
+    timestamp.setHours(timestamp.getHours() - Math.floor(Math.random() * 24 + 8))
+    trades.push({
+      id: `closed-${i + 1}`,
+      symbol: m.symbol,
+      type: r.won ? 'LONG' : 'SHORT',
+      entry: Math.round(entry * 1000) / 1000,
+      exit: Math.round(exit * 1000) / 1000,
+      pnl: r.pnl,
+      status: 'CLOSED' as const,
+      timestamp,
+      confidence: Math.round((0.70 + Math.random() * 0.12) * 100),
+      strategy: m.strategy,
+    })
+  })
+
   return trades.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 }
 
@@ -80,14 +111,14 @@ export function generateTrades(): Trade[] {
 export function getWolfStatus(): WolfStatus {
   return {
     status: 'ACTIVE',
-    winRate: 71.4,
-    totalTrades: 847,
-    dailyPnL: 342.50,
-    weeklyPnL: 1847.25,
-    monthlyPnL: 5623.80,
-    learningProgress: 87,
+    winRate: 0,
+    totalTrades: 0,
+    dailyPnL: 0,
+    weeklyPnL: 0,
+    monthlyPnL: 0,
+    learningProgress: 0,
     lastActivity: new Date(),
-    openPositions: 2,
+    openPositions: 16,
     riskLevel: 'MEDIUM'
   }
 }
@@ -157,10 +188,9 @@ export function generateActivityLogs(): ActivityLog[] {
 
 // Market data
 export function getMarketData(): MarketData[] {
+  // These get replaced by live CoinGecko data in market-ticker.tsx
   return [
-    { symbol: 'ES', price: 5245.50, change: 12.25, changePercent: 0.23, volume: 1245000, high: 5258.00, low: 5230.25 },
-    { symbol: 'NQ', price: 18432.00, change: -45.50, changePercent: -0.25, volume: 892000, high: 18510.00, low: 18380.00 },
-    { symbol: 'SPY', price: 524.85, change: 1.42, changePercent: 0.27, volume: 45000000, high: 526.10, low: 523.40 },
-    { symbol: 'QQQ', price: 448.20, change: -0.85, changePercent: -0.19, volume: 32000000, high: 450.50, low: 447.00 },
+    { symbol: 'BTC', price: 0, change: 0, changePercent: 0, volume: 0, high: 0, low: 0 },
+    { symbol: 'ETH', price: 0, change: 0, changePercent: 0, volume: 0, high: 0, low: 0 },
   ]
 }

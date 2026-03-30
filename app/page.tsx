@@ -329,8 +329,8 @@ export default function WolfMissionControl() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Trade Management</h2>
-                  <p className="text-sm text-muted-foreground">&quot;The only thing standing between you and your goal...&quot;</p>
+                  <h2 className="text-xl font-black text-foreground tracking-tight">🎯 HUNT LOG — Active Positions</h2>
+                  <p className="text-sm text-amber-400/80 italic">&quot;The wolf doesn't chase. He waits, then strikes.&quot;</p>
                 </div>
                 <StreakCounter 
                   currentStreak={winStreak} 
@@ -345,8 +345,8 @@ export default function WolfMissionControl() {
           {activeTab === 'analytics' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Performance Analytics</h2>
-                <p className="text-sm text-muted-foreground">Tracking the path to Wall Street domination</p>
+                <h2 className="text-xl font-black text-foreground tracking-tight">📊 INTEL — Market Performance</h2>
+                <p className="text-sm text-amber-400/80 italic">&quot;Numbers don't lie. Stratton Oakmont approved.&quot;</p>
               </div>
               <div className="grid gap-6 lg:grid-cols-2">
                 <PnLChart data={pnlData} />
@@ -371,8 +371,8 @@ export default function WolfMissionControl() {
           {activeTab === 'learning' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Learning Engine</h2>
-                <p className="text-sm text-muted-foreground">The Wolf is always learning, always adapting</p>
+                <h2 className="text-xl font-black text-foreground tracking-tight">🧠 EVOLUTION — Learning Engine</h2>
+                <p className="text-sm text-amber-400/80 italic">&quot;Adapt or die. Wolf adapts.&quot;</p>
               </div>
               <BelfortQuotes />
               <div className="grid gap-6 lg:grid-cols-2">
@@ -385,8 +385,8 @@ export default function WolfMissionControl() {
           {activeTab === 'history' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Trade History</h2>
-                <p className="text-sm text-muted-foreground">Every trade tells a story of conquest</p>
+                <h2 className="text-xl font-black text-foreground tracking-tight">📖 LEDGER — Closed Trades</h2>
+                <p className="text-sm text-amber-400/80 italic">&quot;Every W and L is a lesson. Wolf journals everything.&quot;</p>
               </div>
               <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
@@ -404,12 +404,38 @@ export default function WolfMissionControl() {
           {activeTab === 'risk' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Risk Management</h2>
-                <p className="text-sm text-muted-foreground">Fortune favors the bold, but respects the smart</p>
+                <h2 className="text-xl font-black text-foreground tracking-tight">🛡️ RISK DESK — Kill Switch Active</h2>
+                <p className="text-sm text-amber-400/80 italic">&quot;Discipline beats conviction every time. Kill switch: -40%.&quot;</p>
+              </div>
+              {/* Risk Parameters — real Wolf config values */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-3">Kill Switch</p>
+                  <p className="text-2xl font-black text-red-400">-40%</p>
+                  <p className="text-xs text-muted-foreground mt-1">Max drawdown before full stop</p>
+                  <div className="mt-3 h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{width: `${Math.max(0, 100 + (wolfStatus.dailyPnL / 100))}%`}} />
+                  </div>
+                  <p className="text-[10px] text-emerald-400 mt-1">🟢 Armed — not triggered</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-3">Position Sizing</p>
+                  <p className="text-2xl font-black text-amber-400">$200</p>
+                  <p className="text-xs text-muted-foreground mt-1">Max per trade (paper mode)</p>
+                  <p className="text-[10px] text-muted-foreground mt-3">Balance: $10,000</p>
+                  <p className="text-[10px] text-amber-400">2% per trade · 8% Kelly cap</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-3">Force Exit</p>
+                  <p className="text-2xl font-black text-blue-400">12h</p>
+                  <p className="text-xs text-muted-foreground mt-1">Max hold time per position</p>
+                  <p className="text-[10px] text-muted-foreground mt-3">Open slots: {wolfStatus.openPositions}/24</p>
+                  <p className="text-[10px] text-blue-400">Min confidence: 70%</p>
+                </div>
               </div>
               <div className="grid gap-6 lg:grid-cols-2">
                 <DdubIndexChart data={ddubData} />
-                <LearningPanel progress={wolfStatus.learningProgress} />
+                <ActivityFeed logs={activityLogs.filter((l: ActivityLog) => l.priority === 'HIGH' || l.priority === 'CRITICAL')} />
               </div>
               <StatsCards wolfStatus={wolfStatus} />
             </div>
@@ -418,8 +444,8 @@ export default function WolfMissionControl() {
           {activeTab === 'automation' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Automation Controls</h2>
-                <p className="text-sm text-muted-foreground">Let the Wolf hunt while you sleep</p>
+                <h2 className="text-xl font-black text-foreground tracking-tight">⚡ AUTOPILOT — Strategy Engine</h2>
+                <p className="text-sm text-amber-400/80 italic">&quot;Value Bet · Copy Trading · Market Making — all running.&quot;</p>
               </div>
               <BelfortQuotes />
               <div className="grid gap-6 lg:grid-cols-2">
@@ -432,8 +458,8 @@ export default function WolfMissionControl() {
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Settings</h2>
-                <p className="text-sm text-muted-foreground">Configure your trading empire</p>
+                <h2 className="text-xl font-black text-foreground tracking-tight">⚙️ CONFIGURE — System Settings</h2>
+                <p className="text-sm text-amber-400/80 italic">&quot;Set the rules. Wolf follows them precisely.&quot;</p>
               </div>
               
               {/* Data Source Toggle */}

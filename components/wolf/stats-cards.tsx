@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Activity, Target, Brain, AlertTriangle, DollarSign, Briefcase } from 'lucide-react'
+import { useState } from 'react'
+import { TrendingUp, TrendingDown, Activity, Target, Brain, DollarSign, Briefcase, Zap } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import type { WolfStatus } from '@/lib/wolf-types'
@@ -10,196 +10,186 @@ interface StatsCardsProps {
   wolfStatus: WolfStatus
 }
 
-// Wall Street motivational labels based on performance
-const getPerformanceLabel = (value: number, type: 'daily' | 'weekly' | 'monthly') => {
-  if (value >= 5000) return 'Yacht Money!'
-  if (value >= 2000) return 'Stratton Approved'
-  if (value >= 1000) return 'Money Never Sleeps'
-  if (value >= 500) return 'The Hunt Pays Off'
-  if (value >= 0) return 'Staying Sharp'
-  if (value >= -500) return 'Temporary Setback'
-  return 'Recalibrating...'
+const getPerformanceLabel = (value: number) => {
+  if (value >= 5000) return '🛥️ Yacht money!'
+  if (value >= 2000) return '💰 Stratton approved'
+  if (value >= 1000) return '📈 Money never sleeps'
+  if (value >= 500) return '🐺 The hunt pays off'
+  if (value >= 100) return '✅ Staying sharp'
+  if (value > 0) return '👍 In the green'
+  if (value === 0) return '⏳ Waiting to resolve'
+  if (value >= -200) return '📉 Temporary setback'
+  return '🔄 Recalibrating...'
 }
 
 const getWinRateLabel = (rate: number) => {
-  if (rate >= 80) return 'Elite Predator'
-  if (rate >= 72) return 'Threshold Breaker'
-  if (rate >= 65) return 'Pack Leader'
-  if (rate >= 50) return 'Lone Wolf'
-  return 'Pup in Training'
+  if (rate >= 80) return '🦅 Elite Predator'
+  if (rate >= 72) return '🎯 Gate Broken'
+  if (rate >= 65) return '🐺 Pack Leader'
+  if (rate >= 50) return '🔪 Lone Wolf'
+  if (rate === 0) return '⏳ First hunt pending'
+  return '📚 Pup in Training'
+}
+
+const getRiskLabel = (risk: WolfStatus['riskLevel']) => {
+  switch (risk) {
+    case 'LOW': return '🛡️ Playing it safe'
+    case 'MEDIUM': return '⚡ Calculated risk'
+    case 'HIGH': return '🔥 Fortune favors bold'
+    default: return ''
+  }
+}
+
+const getRiskColor = (risk: WolfStatus['riskLevel']) => {
+  switch (risk) {
+    case 'LOW': return 'text-emerald-400'
+    case 'MEDIUM': return 'text-amber-400'
+    case 'HIGH': return 'text-red-400'
+    default: return 'text-muted-foreground'
+  }
 }
 
 export function StatsCards({ wolfStatus }: StatsCardsProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
-  
+
   const formatCurrency = (value: number) => {
     const sign = value >= 0 ? '+' : ''
     return `${sign}$${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  const getRiskColor = (risk: WolfStatus['riskLevel']) => {
-    switch (risk) {
-      case 'LOW':
-        return 'text-emerald-400'
-      case 'MEDIUM':
-        return 'text-amber-400'
-      case 'HIGH':
-        return 'text-red-400'
-      default:
-        return 'text-muted-foreground'
-    }
-  }
-
-  const getRiskLabel = (risk: WolfStatus['riskLevel']) => {
-    switch (risk) {
-      case 'LOW':
-        return 'Playing it Safe'
-      case 'MEDIUM':
-        return 'Calculated Risk'
-      case 'HIGH':
-        return 'Fortune Favors Bold'
-      default:
-        return ''
-    }
-  }
-
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+
       {/* Daily P&L */}
-      <Card 
-        className="bg-card border-border transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+      <Card
+        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('daily')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Daily P&L</span>
-            {wolfStatus.dailyPnL >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Daily P&L</span>
+            {wolfStatus.dailyPnL >= 0
+              ? <TrendingUp className="h-4 w-4 text-emerald-500" />
+              : <TrendingDown className="h-4 w-4 text-red-500" />}
           </div>
-          <p className={`mt-2 text-xl font-semibold ${wolfStatus.dailyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <p className={`mt-2 text-xl font-black font-mono ${wolfStatus.dailyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             {formatCurrency(wolfStatus.dailyPnL)}
           </p>
-          <p className="mt-1 text-[10px] text-muted-foreground italic">
-            {hoveredCard === 'daily' ? getPerformanceLabel(wolfStatus.dailyPnL, 'daily') : 'Today'}
+          <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
+            {hoveredCard === 'daily' ? getPerformanceLabel(wolfStatus.dailyPnL) : 'Today'}
           </p>
         </CardContent>
       </Card>
 
       {/* Weekly P&L */}
-      <Card 
-        className="bg-card border-border transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+      <Card
+        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('weekly')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Weekly P&L</span>
-            {wolfStatus.weeklyPnL >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Weekly P&L</span>
+            {wolfStatus.weeklyPnL >= 0
+              ? <TrendingUp className="h-4 w-4 text-emerald-500" />
+              : <TrendingDown className="h-4 w-4 text-red-500" />}
           </div>
-          <p className={`mt-2 text-xl font-semibold ${wolfStatus.weeklyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <p className={`mt-2 text-xl font-black font-mono ${wolfStatus.weeklyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             {formatCurrency(wolfStatus.weeklyPnL)}
           </p>
-          <p className="mt-1 text-[10px] text-muted-foreground italic">
-            {hoveredCard === 'weekly' ? getPerformanceLabel(wolfStatus.weeklyPnL, 'weekly') : 'This Week'}
+          <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
+            {hoveredCard === 'weekly' ? getPerformanceLabel(wolfStatus.weeklyPnL) : 'This Week'}
           </p>
         </CardContent>
       </Card>
 
       {/* Monthly P&L */}
-      <Card 
-        className="bg-card border-border transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+      <Card
+        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('monthly')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Monthly P&L</span>
-            {wolfStatus.monthlyPnL >= 0 ? (
-              <DollarSign className="h-4 w-4 text-emerald-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Monthly P&L</span>
+            {wolfStatus.monthlyPnL >= 0
+              ? <DollarSign className="h-4 w-4 text-emerald-500" />
+              : <TrendingDown className="h-4 w-4 text-red-500" />}
           </div>
-          <p className={`mt-2 text-xl font-semibold ${wolfStatus.monthlyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <p className={`mt-2 text-xl font-black font-mono ${wolfStatus.monthlyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             {formatCurrency(wolfStatus.monthlyPnL)}
           </p>
-          <p className="mt-1 text-[10px] text-muted-foreground italic">
-            {hoveredCard === 'monthly' ? getPerformanceLabel(wolfStatus.monthlyPnL, 'monthly') : 'This Month'}
+          <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
+            {hoveredCard === 'monthly' ? getPerformanceLabel(wolfStatus.monthlyPnL) : 'This Month'}
           </p>
         </CardContent>
       </Card>
 
       {/* Total Trades */}
-      <Card 
-        className="bg-card border-border transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+      <Card
+        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('trades')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Total Trades</span>
-            <Briefcase className="h-4 w-4 text-accent" />
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Trades</span>
+            <Briefcase className="h-4 w-4 text-amber-400" />
           </div>
-          <p className="mt-2 text-xl font-semibold text-foreground">{wolfStatus.totalTrades}</p>
-          <p className="mt-1 text-[10px] text-muted-foreground italic">
-            {hoveredCard === 'trades' 
-              ? wolfStatus.totalTrades >= 100 ? 'Sell Me This Pen!' : 'Building the empire' 
-              : 'Lifetime'
-            }
+          <p className="mt-2 text-xl font-black font-mono text-foreground">{wolfStatus.totalTrades}</p>
+          <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
+            {hoveredCard === 'trades'
+              ? wolfStatus.totalTrades >= 100 ? '🖊️ Sell me this pen!' : wolfStatus.totalTrades === 0 ? '⏳ First kill incoming' : '🏗️ Building the empire'
+              : 'Lifetime'}
           </p>
         </CardContent>
       </Card>
 
-      {/* Win Rate with Progress */}
-      <Card 
-        className={`bg-card border-border transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 ${wolfStatus.winRate >= 72 ? 'ring-1 ring-emerald-500/30' : ''}`}
+      {/* Win Rate */}
+      <Card
+        className={`bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default ${wolfStatus.winRate >= 72 ? 'ring-1 ring-emerald-500/40' : ''}`}
         onMouseEnter={() => setHoveredCard('winrate')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Win Rate</span>
-            <Target className={`h-4 w-4 ${wolfStatus.winRate >= 72 ? 'text-emerald-500' : 'text-primary'}`} />
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Win Rate</span>
+            <Target className={`h-4 w-4 ${wolfStatus.winRate >= 72 ? 'text-emerald-500' : 'text-amber-400'}`} />
           </div>
-          <p className={`mt-2 text-xl font-semibold ${wolfStatus.winRate >= 72 ? 'text-emerald-400' : 'text-amber-400'}`}>
-            {wolfStatus.winRate.toFixed(1)}%
+          <p className={`mt-2 text-xl font-black font-mono ${wolfStatus.winRate >= 72 ? 'text-emerald-400' : wolfStatus.winRate === 0 ? 'text-muted-foreground' : 'text-amber-400'}`}>
+            {wolfStatus.winRate === 0 ? '—' : `${wolfStatus.winRate.toFixed(1)}%`}
           </p>
           <div className="mt-2 flex items-center gap-2">
-            <Progress value={wolfStatus.winRate} className="h-1.5" />
-            <span className="text-[10px] text-muted-foreground">72%</span>
+            <Progress value={wolfStatus.winRate} className="h-1.5 flex-1" />
+            <span className="text-[10px] text-muted-foreground shrink-0">72%</span>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground italic">
-            {hoveredCard === 'winrate' ? getWinRateLabel(wolfStatus.winRate) : ''}
+          <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
+            {hoveredCard === 'winrate' ? getWinRateLabel(wolfStatus.winRate) : 'Target: 72%'}
           </p>
         </CardContent>
       </Card>
 
-      {/* Learning Progress */}
-      <Card 
-        className="bg-card border-border transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
-        onMouseEnter={() => setHoveredCard('learning')}
+      {/* Open Positions / Kill Switch */}
+      <Card
+        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
+        onMouseEnter={() => setHoveredCard('positions')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Learning</span>
-            <Brain className="h-4 w-4 text-accent" />
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Positions</span>
+            <Activity className={`h-4 w-4 ${wolfStatus.openPositions > 0 ? 'text-amber-400 animate-pulse' : 'text-muted-foreground'}`} />
           </div>
-          <p className="mt-2 text-xl font-semibold text-foreground">{wolfStatus.learningProgress}%</p>
-          <div className="mt-2 flex items-center gap-2">
-            <Progress value={wolfStatus.learningProgress} className="h-1.5" />
-            <AlertTriangle className={`h-3 w-3 ${getRiskColor(wolfStatus.riskLevel)}`} />
+          <p className="mt-2 text-xl font-black font-mono text-foreground">{wolfStatus.openPositions}</p>
+          <div className="mt-2 flex items-center gap-1">
+            <Zap className={`h-3 w-3 ${getRiskColor(wolfStatus.riskLevel)}`} />
+            <span className={`text-[10px] font-bold ${getRiskColor(wolfStatus.riskLevel)}`}>
+              {wolfStatus.riskLevel} RISK
+            </span>
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground italic">
-            {hoveredCard === 'learning' ? getRiskLabel(wolfStatus.riskLevel) : ''}
+          <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
+            {hoveredCard === 'positions' ? getRiskLabel(wolfStatus.riskLevel) : 'Kill switch: -40%'}
           </p>
         </CardContent>
       </Card>

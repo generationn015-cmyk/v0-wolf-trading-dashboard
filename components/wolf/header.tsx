@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Settings, RefreshCw, Wifi, WifiOff, Volume2, VolumeX } from 'lucide-react'
+import { Bell, Settings, RefreshCw, Wifi, WifiOff, Volume2, VolumeX, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -20,167 +20,208 @@ interface HeaderProps {
   onToggleSound?: () => void
 }
 
+const BELFORT_BANNER = [
+  "BUY OR FUCKING DIE",
+  "THE HUNT NEVER STOPS",
+  "BUY OR FUCKING DIE",
+  "MONEY NEVER SLEEPS",
+  "BUY OR FUCKING DIE",
+  "SELL ME THIS PEN",
+]
+
 export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = false, onToggleSound }: HeaderProps) {
   const [nyseTime, setNyseTime] = useState<string | null>(null)
+  const [bannerIdx, setBannerIdx] = useState(0)
+  const [marketOpen, setMarketOpen] = useState(false)
 
   useEffect(() => {
     const updateTime = () => {
-      setNyseTime(new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }))
+      const now = new Date()
+      setNyseTime(now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+      // NYSE: Mon–Fri 9:30–16:00 ET
+      const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+      const day = et.getDay()
+      const h = et.getHours(), m = et.getMinutes()
+      const mins = h * 60 + m
+      setMarketOpen(day >= 1 && day <= 5 && mins >= 570 && mins < 960)
     }
     updateTime()
     const interval = setInterval(updateTime, 1000)
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    const interval = setInterval(() => setBannerIdx(i => (i + 1) % BELFORT_BANNER.length), 4000)
+    return () => clearInterval(interval)
+  }, [])
+
   const getStatusColor = (status: WolfStatus['status']) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'bg-emerald-500'
-      case 'LEARNING':
-        return 'bg-amber-500'
-      case 'IDLE':
-        return 'bg-slate-400'
-      case 'ERROR':
-        return 'bg-red-500'
-      default:
-        return 'bg-slate-400'
+      case 'ACTIVE': return 'bg-emerald-500'
+      case 'LEARNING': return 'bg-amber-500'
+      case 'IDLE': return 'bg-slate-400'
+      case 'ERROR': return 'bg-red-500'
+      default: return 'bg-slate-400'
     }
   }
 
   const getStatusMessage = (status: WolfStatus['status']) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'Hunting for profits...'
-      case 'LEARNING':
-        return 'Sharpening the claws...'
-      case 'IDLE':
-        return 'The wolf rests...'
-      case 'ERROR':
-        return 'Wolf needs attention!'
-      default:
-        return ''
+      case 'ACTIVE': return 'Predator mode — scanning markets'
+      case 'LEARNING': return 'Sharpening the edge...'
+      case 'IDLE': return 'Biding time...'
+      case 'ERROR': return '⚠️ Wolf needs attention'
+      default: return ''
     }
   }
 
   return (
-    <header className="border-b border-border bg-card px-6 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {/* Logo and Title */}
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30">
-              <span className="text-3xl">🐺</span>
-              <span className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">
-                Wolf <span className="text-amber-500">of All Streets</span>
-              </h1>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{getStatusMessage(wolfStatus.status)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Connection Status */}
-          <div className="ml-4 flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
-            {isConnected ? (
-              <>
-                <Wifi className="h-3 w-3 text-emerald-500" />
-                <span className="text-xs text-emerald-500">Wall St. Live</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="h-3 w-3 text-red-500" />
-                <span className="text-xs text-red-500">Offline</span>
-              </>
-            )}
-          </div>
-
-          {/* NYC Time */}
-          <div className="hidden md:flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
-            <span className="text-[10px] text-muted-foreground">NYSE</span>
-            <span className="text-xs font-mono text-foreground">
-              {nyseTime ?? '--:--'}
+    <div className="flex flex-col border-b border-border">
+      {/* Top banner — Belfort ticker */}
+      <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-1 overflow-hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <span className="text-amber-500 font-black text-[11px] tracking-[0.2em] shrink-0">🐺 STRATTON OAKMONT</span>
+            <span className="text-amber-500/40 text-[10px]">|</span>
+            <span className="text-amber-400 font-bold text-[11px] tracking-[0.15em] animate-pulse">
+              {BELFORT_BANNER[bannerIdx]}
             </span>
           </div>
-        </div>
-
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-3">
-          {/* Win Rate Badge - Styled like trading terminal */}
-          <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Win Rate</span>
-            <Badge
-              variant={wolfStatus.winRate >= 72 ? 'default' : 'secondary'}
-              className={`font-mono text-sm ${wolfStatus.winRate >= 72 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : 'bg-amber-500/20 text-amber-400 border border-amber-500/50'}`}
-            >
-              {wolfStatus.winRate.toFixed(1)}%
-            </Badge>
-            {wolfStatus.winRate >= 72 && (
-              <span className="text-[10px] text-emerald-500">TARGET HIT</span>
-            )}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className={`text-[10px] font-bold tracking-widest ${marketOpen ? 'text-emerald-400' : 'text-red-400'}`}>
+              {marketOpen ? '● MARKET OPEN' : '● MARKET CLOSED'}
+            </span>
+            <span className="text-[10px] text-muted-foreground">POLYMARKET • KALSHI • PAPER MODE</span>
           </div>
-
-          {/* Open Positions */}
-          <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Open</span>
-            <Badge variant="outline" className="font-mono">{wolfStatus.openPositions}</Badge>
-          </div>
-
-          {/* Sound Toggle */}
-          {onToggleSound && (
-            <Button variant="ghost" size="icon" onClick={onToggleSound} className="text-muted-foreground hover:text-foreground">
-              {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            </Button>
-          )}
-
-          {/* Refresh Button */}
-          <Button variant="ghost" size="icon" onClick={onRefresh} className="text-muted-foreground hover:text-foreground">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-
-          {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-                <Bell className="h-4 w-4" />
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black">
-                  3
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-sm font-medium">🎯 Win Rate Alert</span>
-                  <Badge className="bg-emerald-500/20 text-emerald-400 text-[10px]">Target</Badge>
-                </div>
-                <span className="text-xs text-muted-foreground">Approaching 72% threshold - almost there!</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-sm font-medium">📈 New Trade Opened</span>
-                  <Badge className="bg-blue-500/20 text-blue-400 text-[10px]">Trade</Badge>
-                </div>
-                <span className="text-xs text-muted-foreground">LONG ES @ 5,245.50 | Confidence: 87%</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-sm font-medium">🏆 Achievement Unlocked!</span>
-                  <Badge className="bg-amber-500/20 text-amber-400 text-[10px]">New!</Badge>
-                </div>
-                <span className="text-xs text-muted-foreground">&quot;Hot Streak&quot; - 5 consecutive wins!</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Settings */}
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Settings className="h-4 w-4" />
-          </Button>
         </div>
       </div>
-    </header>
+
+      {/* Main header */}
+      <header className="bg-card px-6 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30">
+                <span className="text-3xl">🐺</span>
+                <span className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
+              </div>
+              <div>
+                <h1 className="text-lg font-black text-foreground tracking-tight">
+                  WOLF <span className="text-amber-500">OF ALL STREETS</span>
+                </h1>
+                <p className="text-[10px] text-muted-foreground italic">{getStatusMessage(wolfStatus.status)}</p>
+              </div>
+            </div>
+
+            {/* Connection */}
+            <div className="ml-2 flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
+              {isConnected ? (
+                <>
+                  <Wifi className="h-3 w-3 text-emerald-500" />
+                  <span className="text-xs text-emerald-500 font-medium">Live Feed</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3 text-red-500" />
+                  <span className="text-xs text-red-500">Offline</span>
+                </>
+              )}
+            </div>
+
+            {/* NYSE Clock */}
+            <div className="hidden md:flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
+              <span className="text-[10px] text-muted-foreground font-bold">NYSE</span>
+              <span className="text-xs font-mono text-foreground">{nyseTime ?? '--:--:--'}</span>
+            </div>
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-2">
+            {/* Win Rate */}
+            <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Win Rate</span>
+              <Badge
+                className={`font-mono text-sm font-bold ${wolfStatus.winRate >= 72
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/50'}`}
+              >
+                {wolfStatus.winRate.toFixed(1)}%
+              </Badge>
+              {wolfStatus.winRate >= 72 && (
+                <span className="text-[10px] text-emerald-500 font-bold animate-pulse">🎯 TARGET</span>
+              )}
+            </div>
+
+            {/* P&L */}
+            <div className="hidden lg:flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
+              <TrendingUp className={`h-3 w-3 ${wolfStatus.dailyPnL >= 0 ? 'text-emerald-500' : 'text-red-500'}`} />
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Today</span>
+              <span className={`font-mono text-sm font-bold ${wolfStatus.dailyPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {wolfStatus.dailyPnL >= 0 ? '+' : ''}${wolfStatus.dailyPnL.toFixed(2)}
+              </span>
+            </div>
+
+            {/* Open Positions */}
+            <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Open</span>
+              <Badge variant="outline" className="font-mono font-bold">{wolfStatus.openPositions}</Badge>
+            </div>
+
+            {/* Sound */}
+            {onToggleSound && (
+              <Button variant="ghost" size="icon" onClick={onToggleSound} className="text-muted-foreground hover:text-foreground">
+                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+            )}
+
+            {/* Refresh */}
+            <Button variant="ghost" size="icon" onClick={onRefresh} className="text-muted-foreground hover:text-amber-500">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+
+            {/* Alerts */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
+                  <Bell className="h-4 w-4" />
+                  {wolfStatus.openPositions > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-black">
+                      {wolfStatus.openPositions}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
+                  <div className="flex w-full items-center justify-between">
+                    <span className="text-sm font-bold">🐺 Wolf Status</span>
+                    <Badge className="bg-emerald-500/20 text-emerald-400 text-[10px]">{wolfStatus.status}</Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{wolfStatus.openPositions} active positions · Paper mode</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
+                  <div className="flex w-full items-center justify-between">
+                    <span className="text-sm font-bold">📊 Performance</span>
+                    <Badge className="bg-blue-500/20 text-blue-400 text-[10px]">Live</Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    WR: {wolfStatus.winRate.toFixed(1)}% · {wolfStatus.totalTrades} trades · Daily: ${wolfStatus.dailyPnL.toFixed(2)}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
+                  <span className="text-sm font-bold">🎯 Target</span>
+                  <span className="text-xs text-muted-foreground">72% win rate gate before live deployment</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </header>
+    </div>
   )
 }
