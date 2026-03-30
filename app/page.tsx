@@ -292,6 +292,7 @@ export default function WolfMissionControl() {
               activityLogs={activityLogs}
               marketData={marketData}
               activeTab={activeTab}
+              onTabChange={setActiveTab}
             />
           </div>
 
@@ -330,12 +331,12 @@ export default function WolfMissionControl() {
                 <DdubIndexChart data={ddubData} />
               </div>
 
-              {/* Bottom Row */}
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2">
+              {/* Bottom Row — TradesTable takes full width, side panel stacked */}
+              <div className="grid gap-6 xl:grid-cols-4">
+                <div className="xl:col-span-3">
                   <TradesTable trades={trades} />
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <TraderRank 
                     totalProfit={totalProfit}
                     totalTrades={wolfStatus.totalTrades}
@@ -361,6 +362,11 @@ export default function WolfMissionControl() {
                 />
               </div>
               <TradesTable trades={trades} />
+              {/* Session log shortcut */}
+              <div className="rounded-2xl bg-[#161624] border border-white/5 p-4">
+                <p className="text-xs font-black text-white uppercase tracking-wider mb-1">📋 Daily Session Log</p>
+                <p className="text-xs text-zinc-500">View in Evolution tab → Session Log section</p>
+              </div>
             </div>
           )}
 

@@ -5,7 +5,6 @@ import { Lock, Unlock, Eye, EyeOff, Shield } from 'lucide-react'
 
 // Config page password lock — stored in localStorage (client-side only)
 // Not server-auth — this is a UI gate to prevent casual viewers
-const CONFIG_KEY = 'wolf_config_unlocked'
 const CONFIG_HASH_KEY = 'wolf_config_hash'
 
 // Simple hash — not crypto security, just UI gate
@@ -33,10 +32,10 @@ export function ConfigLock({ children }: ConfigLockProps) {
   useEffect(() => {
     setMounted(true)
     const stored = localStorage.getItem(CONFIG_HASH_KEY)
-    const session = sessionStorage.getItem(CONFIG_KEY)
     setHasPassword(!!stored)
-    if (session === 'true' && stored) setUnlocked(true)
+    // Always locked on page load — no session persistence
     setMode(stored ? 'enter' : 'set')
+    setUnlocked(false)
   }, [])
 
   const handleSet = async () => {
@@ -44,7 +43,6 @@ export function ConfigLock({ children }: ConfigLockProps) {
     if (pw !== pw2) { setError('Passwords do not match'); return }
     const hash = await hashPassword(pw)
     localStorage.setItem(CONFIG_HASH_KEY, hash)
-    sessionStorage.setItem(CONFIG_KEY, 'true')
     setHasPassword(true)
     setUnlocked(true)
     setPw(''); setPw2(''); setError('')
@@ -55,7 +53,6 @@ export function ConfigLock({ children }: ConfigLockProps) {
     if (!stored) { setMode('set'); return }
     const hash = await hashPassword(pw)
     if (hash === stored) {
-      sessionStorage.setItem(CONFIG_KEY, 'true')
       setUnlocked(true)
       setPw(''); setError('')
     } else {
@@ -65,14 +62,12 @@ export function ConfigLock({ children }: ConfigLockProps) {
   }
 
   const handleLock = () => {
-    sessionStorage.removeItem(CONFIG_KEY)
     setUnlocked(false)
     setMode('enter')
   }
 
   const handleReset = () => {
     localStorage.removeItem(CONFIG_HASH_KEY)
-    sessionStorage.removeItem(CONFIG_KEY)
     setHasPassword(false)
     setUnlocked(false)
     setMode('set')

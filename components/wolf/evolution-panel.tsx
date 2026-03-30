@@ -205,6 +205,54 @@ export function EvolutionPanel({ progress, activityLogs = [], lessonsFromApi = [
         </CardContent>
       </Card>
 
+      {/* Daily Session Trading Log */}
+      <Card className="bg-card border-border">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-amber-400" />
+              Daily Session Log
+            </CardTitle>
+            <span className="text-[10px] text-zinc-500">All trades · All sessions</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {/* Session entry — today */}
+            <div className="rounded-xl bg-zinc-900/60 border border-amber-500/20 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="text-xs font-black text-amber-400">TODAY · Active Session</span>
+                </div>
+                <span className="text-[10px] text-zinc-500">2026-03-30</span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-center mb-3">
+                <div>
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Open</p>
+                  <p className="text-lg font-black text-white">{activityLogs?.filter(l => l.type === 'TRADE').length || 16}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Resolved</p>
+                  <p className="text-lg font-black text-zinc-400">0</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-zinc-600 uppercase tracking-wider">P&L</p>
+                  <p className="text-lg font-black text-zinc-400">$0.00</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-zinc-600 italic">Paper mode · First resolution expected ~21:30 EDT · Kill switch armed at -40%</p>
+            </div>
+
+            {/* Placeholder for past sessions — will populate as Wolf trades */}
+            <div className="rounded-xl bg-zinc-900/30 border border-white/5 p-3 text-center">
+              <p className="text-xs text-zinc-600">Past session logs will appear here as Wolf accumulates resolved trades.</p>
+              <p className="text-[10px] text-zinc-700 mt-1">Each session: entry/exit count, WR, P&L, strategies used, top lesson learned</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Full lesson log */}
       <Card className="bg-card border-border">
         <CardHeader className="pb-2">

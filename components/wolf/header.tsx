@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { TickerBanner } from '@/components/wolf/ticker-banner'
+import { WolfAnimation } from '@/components/wolf/wolf-animation'
 import { Bell, Settings, RefreshCw, Wifi, WifiOff, Volume2, VolumeX, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -75,7 +75,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="relative flex h-9 w-9 lg:h-12 lg:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 overflow-hidden">
-                <Image src="/wolf-logo.svg" alt="Wolf" width={48} height={48} className="w-full h-full object-cover" priority />
+                <WolfAnimation size={48} />
                 <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
               </div>
               <div className="hidden sm:block">

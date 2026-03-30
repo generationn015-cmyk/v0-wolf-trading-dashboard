@@ -9,6 +9,7 @@ interface MobileDashboardProps {
   activityLogs: ActivityLog[]
   marketData: MarketData[]
   activeTab: string
+  onTabChange: (tab: string) => void
 }
 
 // ─── Shared mobile card ───────────────────────────────────────────────────────
@@ -25,7 +26,7 @@ function MLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Floor (Dashboard) tab ───────────────────────────────────────────────────
-function MobileFloor({ wolfStatus, trades, activityLogs, marketData }: Omit<MobileDashboardProps, 'activeTab'>) {
+function MobileFloor({ wolfStatus, trades, activityLogs, marketData, onTabChange }: Omit<MobileDashboardProps, 'activeTab'>) {
   const openTrades = trades.filter(t => t.status === 'OPEN')
   const recentLogs = activityLogs.slice(0, 4)
 
@@ -129,7 +130,12 @@ function MobileFloor({ wolfStatus, trades, activityLogs, marketData }: Omit<Mobi
               )
             })}
             {openTrades.length > 3 && (
-              <p className="text-center text-xs text-zinc-600 py-1">+{openTrades.length - 3} more → Hunts tab</p>
+              <button
+                onClick={() => onTabChange('trades')}
+                className="w-full text-center text-xs text-amber-400/70 hover:text-amber-400 py-2 font-bold transition-colors active:scale-95"
+              >
+                +{openTrades.length - 3} more → tap to see all
+              </button>
             )}
           </div>
         </div>
@@ -452,7 +458,7 @@ export function MobileDashboard({ wolfStatus, trades, activityLogs, marketData, 
       {/* Content */}
       <div className="flex-1 px-4 pb-6">
         {activeTab === 'dashboard' && (
-          <MobileFloor wolfStatus={wolfStatus} trades={trades} activityLogs={activityLogs} marketData={marketData} />
+          <MobileFloor wolfStatus={wolfStatus} trades={trades} activityLogs={activityLogs} marketData={marketData} onTabChange={onTabChange} />
         )}
         {activeTab === 'trades' && <MobileHunts trades={trades} />}
         {activeTab === 'analytics' && <MobileIntel wolfStatus={wolfStatus} />}
