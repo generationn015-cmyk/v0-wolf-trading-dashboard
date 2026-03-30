@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { Trophy, Star, Flame, Target, Crown, Zap, TrendingUp, Award, Lock } from 'lucide-react'
+import { Trophy, Star, Flame, Target, Crown, Zap, TrendingUp, Award, Lock, Ship, Building2, Sparkles } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -17,6 +16,7 @@ interface Achievement {
   maxProgress?: number
   rarity: 'common' | 'rare' | 'epic' | 'legendary'
   unlockedAt?: Date
+  wolfQuote?: string
 }
 
 interface AchievementsProps {
@@ -35,6 +35,7 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       unlocked: true,
       rarity: 'common',
       unlockedAt: new Date('2024-01-15'),
+      wolfQuote: '"Everybody wants to be a winner... now you are one."'
     },
     {
       id: 'wolf-pup',
@@ -45,6 +46,7 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       progress: Math.min(winStreak, 5),
       maxProgress: 5,
       rarity: 'common',
+      wolfQuote: '"The little wolf is learning to hunt."'
     },
     {
       id: 'sell-me-this-pen',
@@ -54,6 +56,7 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       unlocked: true,
       rarity: 'rare',
       unlockedAt: new Date('2024-02-20'),
+      wolfQuote: '"You create urgency. You create scarcity."'
     },
     {
       id: 'money-never-sleeps',
@@ -62,16 +65,18 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       icon: <Star className="h-5 w-5" />,
       unlocked: true,
       rarity: 'rare',
+      wolfQuote: '"While they sleep, we hunt."'
     },
     {
       id: 'stratton-oakmont',
       title: 'Stratton Oakmont',
       description: 'Achieve $10,000 in total profits',
-      icon: <TrendingUp className="h-5 w-5" />,
+      icon: <Building2 className="h-5 w-5" />,
       unlocked: totalProfit >= 10000,
       progress: Math.min(totalProfit, 10000),
       maxProgress: 10000,
       rarity: 'epic',
+      wolfQuote: '"We\'re not going anywhere! We\'re here to stay!"'
     },
     {
       id: 'im-not-leaving',
@@ -82,6 +87,7 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       progress: winRate >= 72 ? 30 : 18,
       maxProgress: 30,
       rarity: 'epic',
+      wolfQuote: '"The show goes on. The wolf survives."'
     },
     {
       id: 'wolf-of-all-streets',
@@ -92,16 +98,18 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       progress: Math.min(winStreak, 15),
       maxProgress: 15,
       rarity: 'legendary',
+      wolfQuote: '"I\'ve been a poor man, and I\'ve been a rich man. I choose rich every f***ing time."'
     },
     {
       id: 'yacht-money',
       title: 'Yacht Money',
       description: 'Reach $100,000 in total profits',
-      icon: <Trophy className="h-5 w-5" />,
+      icon: <Ship className="h-5 w-5" />,
       unlocked: false,
       progress: totalProfit,
       maxProgress: 100000,
       rarity: 'legendary',
+      wolfQuote: '"Was all this legal? Absolutely f***ing not."'
     },
   ]
 
@@ -130,7 +138,10 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       case 'epic':
         return <Badge className="bg-purple-500/20 text-purple-300 text-[10px]">Epic</Badge>
       case 'legendary':
-        return <Badge className="bg-amber-500/20 text-amber-300 text-[10px]">Legendary</Badge>
+        return <Badge className="bg-amber-500/20 text-amber-300 text-[10px] flex items-center gap-1">
+          <Sparkles className="h-2.5 w-2.5" />
+          Legendary
+        </Badge>
     }
   }
 
@@ -141,12 +152,21 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base font-medium">
-            <Trophy className="h-5 w-5 text-amber-500" />
-            Achievements
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20 border border-amber-500/30">
+              <Trophy className="h-5 w-5 text-amber-500" />
+            </div>
+            Wall Street Trophies
           </CardTitle>
-          <Badge variant="outline" className="text-xs">
-            {unlockedCount}/{achievements.length} Unlocked
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {unlockedCount}/{achievements.length}
+            </Badge>
+            {unlockedCount === achievements.length && (
+              <Badge className="bg-amber-500/20 text-amber-400 text-[10px]">
+                LEGEND
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -156,10 +176,10 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
               <Tooltip key={achievement.id}>
                 <TooltipTrigger asChild>
                   <div
-                    className={`relative flex flex-col items-center justify-center rounded-lg border p-3 transition-all hover:scale-105 cursor-pointer ${getRarityStyles(achievement.rarity, achievement.unlocked)}`}
+                    className={`relative flex flex-col items-center justify-center rounded-lg border p-3 transition-all hover:scale-105 cursor-pointer ${getRarityStyles(achievement.rarity, achievement.unlocked)} ${achievement.rarity === 'legendary' && achievement.unlocked ? 'animate-pulse' : ''}`}
                   >
                     {!achievement.unlocked && (
-                      <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/80">
+                      <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-[1px]">
                         <Lock className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
@@ -172,22 +192,36 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
                         className="mt-2 h-1 w-full" 
                       />
                     )}
+                    {achievement.unlocked && achievement.rarity === 'legendary' && (
+                      <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-amber-400" />
+                    )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[200px]">
-                  <div className="space-y-1">
+                <TooltipContent side="bottom" className="max-w-[220px]">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium">{achievement.title}</p>
+                      <p className="font-bold">{achievement.title}</p>
                       {getRarityBadge(achievement.rarity)}
                     </div>
                     <p className="text-xs text-muted-foreground">{achievement.description}</p>
-                    {achievement.progress !== undefined && achievement.maxProgress && (
-                      <p className="text-xs text-primary">
-                        Progress: {achievement.progress.toLocaleString()}/{achievement.maxProgress.toLocaleString()}
+                    {achievement.wolfQuote && (
+                      <p className="text-[10px] text-amber-400/80 italic border-l-2 border-amber-500/30 pl-2">
+                        {achievement.wolfQuote}
                       </p>
                     )}
+                    {achievement.progress !== undefined && achievement.maxProgress && (
+                      <div className="pt-1">
+                        <Progress 
+                          value={(achievement.progress / achievement.maxProgress) * 100} 
+                          className="h-1.5" 
+                        />
+                        <p className="text-[10px] text-primary mt-1">
+                          {achievement.progress.toLocaleString()}/{achievement.maxProgress.toLocaleString()}
+                        </p>
+                      </div>
+                    )}
                     {achievement.unlocked && achievement.unlockedAt && (
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[10px] text-emerald-400">
                         Unlocked: {achievement.unlockedAt.toLocaleDateString()}
                       </p>
                     )}
@@ -197,6 +231,14 @@ export function Achievements({ winStreak, totalProfit, winRate }: AchievementsPr
             ))}
           </div>
         </TooltipProvider>
+        
+        {/* Achievement motivation */}
+        <div className="mt-4 rounded-lg bg-secondary/50 p-3 text-center">
+          <p className="text-[11px] text-muted-foreground italic">
+            &quot;The only thing standing between you and your goal is the bullshit story you keep telling yourself.&quot;
+          </p>
+          <p className="text-[10px] text-amber-400/70 mt-1">- Jordan Belfort</p>
+        </div>
       </CardContent>
     </Card>
   )
