@@ -89,32 +89,39 @@ export default function WolfMissionControl() {
     : mockDdubData
 
   const trades: Trade[] = useApiData && apiState?.data?.trades?.length > 0
-    ? apiState.data.trades.map((t: { id: string; symbol: string; side: string; entryPrice: number; exitPrice?: number; quantity: number; status: string; pnl?: number; pnlPercent?: number; entryTime: string; exitTime?: string; strategy?: string }) => ({
+    ? apiState.data.trades.map((t: { id: string; symbol: string; side: string; entryPrice: number; exitPrice?: number; quantity: number; status: string; pnl?: number; pnlPercent?: number; entryTime: string | number; exitTime?: string | number; strategy?: string; confidence?: number }) => ({
         id: t.id,
         symbol: t.symbol,
-        side: t.side,
-        entryPrice: t.entryPrice,
-        exitPrice: t.exitPrice,
-        quantity: t.quantity,
-        status: t.status,
-        pnl: t.pnl,
-        pnlPercent: t.pnlPercent,
-        entryTime: t.entryTime,
-        exitTime: t.exitTime,
-        strategy: t.strategy
+        // Normalize side: YES→LONG, NO→SHORT, LONG/SHORT pass through
+        type: (t.side === 'YES' || t.side === 'LONG') ? 'LONG' as const : 'SHORT' as const,
+        entry: t.entryPrice ?? 0,
+        exit: t.exitPrice && t.exitPrice > 0 ? t.exitPrice : null,
+        // Normalize status: open→OPEN, won/lost/closed→CLOSED
+        status: (['OPEN','open'].includes(t.status) ? 'OPEN' : ['CLOSED','won','lost','closed'].includes(t.status) ? 'CLOSED' : 'PENDING') as 'OPEN' | 'CLOSED' | 'PENDING',
+        pnl: t.pnl ?? 0,
+        // Normalize timestamp: epoch ms number → Date, ISO string → Date
+        timestamp: typeof t.entryTime === 'number' ? new Date(t.entryTime) : t.entryTime ? new Date(t.entryTime) : new Date(),
+        confidence: t.confidence ?? 0.75,
+        strategy: t.strategy ?? 'unknown',
       }))
     : mockTrades
 
   const wolfStatus: WolfStatus = useApiData && apiState?.data?.status
     ? {
-        status: apiState.data.status.status,
-        message: apiState.data.status.message,
-        currentPosition: apiState.data.status.currentPosition,
-        ddubSignal: apiState.data.status.ddubSignal?.value ?? 55,
-        ddubDirection: apiState.data.status.ddubSignal?.direction ?? 'HOLD',
+        // Normalize Wolf status strings to WolfStatus enum
+        status: (['hunting','online','active'].includes(apiState.data.status.status) ? 'ACTIVE'
+                 : ['learning'].includes(apiState.data.status.status) ? 'LEARNING'
+                 : ['error','crash'].includes(apiState.data.status.status) ? 'ERROR'
+                 : 'IDLE') as 'ACTIVE' | 'IDLE' | 'LEARNING' | 'ERROR',
         winRate: apiState.data.performance?.winRate ?? 0,
         totalTrades: apiState.data.performance?.totalTrades ?? 0,
-        learningProgress: apiState.data.learning?.progress ?? 0
+        dailyPnL: apiState.data.performance?.dailyPnl ?? 0,
+        weeklyPnL: apiState.data.performance?.weeklyPnl ?? 0,
+        monthlyPnL: apiState.data.performance?.monthlyPnl ?? 0,
+        learningProgress: apiState.data.learning?.progress ?? 0,
+        lastActivity: apiState.data.lastUpdated ? new Date(apiState.data.lastUpdated) : null,
+        openPositions: (apiState.data.trades ?? []).filter((t: {status: string}) => t.status === 'OPEN' || t.status === 'open').length,
+        riskLevel: 'MEDIUM' as const,
       }
     : mockWolfStatus
 
