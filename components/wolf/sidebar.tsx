@@ -32,7 +32,7 @@ const navItems = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   return (
-    <aside className="flex h-full w-16 flex-col border-r border-border bg-sidebar lg:w-56">
+    <aside className="hidden lg:flex h-full w-16 flex-col border-r border-border bg-sidebar lg:w-56">
       {/* Stratton Oakmont badge */}
       <div className="hidden lg:block border-b border-sidebar-border p-3">
         <div className="flex items-center gap-2 px-2">

@@ -79,7 +79,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
     <div className="flex flex-col border-b border-border">
       {/* Top banner — Belfort ticker */}
       <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-1 overflow-hidden">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 overflow-hidden">
             <span className="text-amber-500 font-black text-[11px] tracking-[0.2em] shrink-0">🐺 STRATTON OAKMONT</span>
             <span className="text-amber-500/40 text-[10px]">|</span>
@@ -107,7 +107,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
                 <span className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
               </div>
               <div>
-                <h1 className="text-lg font-black text-foreground tracking-tight">
+                <h1 className="text-base lg:text-lg font-black text-foreground tracking-tight">
                   WOLF <span className="text-amber-500">OF ALL STREETS</span>
                 </h1>
                 <p className="text-[10px] text-muted-foreground italic">{getStatusMessage(wolfStatus.status)}</p>

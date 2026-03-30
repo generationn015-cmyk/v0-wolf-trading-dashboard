@@ -219,3 +219,24 @@
   -webkit-background-clip: text;
   background-clip: text;
 }
+
+/* ── Mobile / Safe areas ─────────────────────────────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Ensure scrollable areas don't get hidden behind bottom nav on mobile */
+@media (max-width: 1023px) {
+  html, body {
+    overscroll-behavior: none;
+  }
+}
+
+/* Mobile hunt log — tighter table cells */
+@media (max-width: 640px) {
+  .wolf-table-cell {
+    padding: 6px 8px;
+  }
+}

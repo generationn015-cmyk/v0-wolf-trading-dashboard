@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import useSWR from 'swr'
 import { Header } from '@/components/wolf/header'
+import { MobileNav } from '@/components/wolf/mobile-nav'
+import { IntroAudio } from '@/components/wolf/intro-audio'
 import { Sidebar } from '@/components/wolf/sidebar'
 import { StatsCards } from '@/components/wolf/stats-cards'
 import { PnLChart } from '@/components/wolf/pnl-chart'
@@ -261,22 +263,26 @@ export default function WolfMissionControl() {
       <Confetti active={showConfetti} duration={4000} />
       
       {/* Header */}
-      <Header 
-        wolfStatus={wolfStatus} 
-        onRefresh={handleRefresh} 
-        isConnected={isConnected}
-        soundEnabled={soundEnabled}
-        onToggleSound={handleToggleSound}
-      />
+      <div className="flex flex-col">
+        <Header 
+          wolfStatus={wolfStatus} 
+          onRefresh={handleRefresh} 
+          isConnected={isConnected}
+          soundEnabled={soundEnabled}
+          onToggleSound={handleToggleSound}
+        />
+        {/* Audio engine — hidden, handles intro sound + trade sfx */}
+        <IntroAudio soundEnabled={soundEnabled} onToggle={handleToggleSound} />
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6">
           {activeTab === 'dashboard' && (
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {/* Market Ticker */}
               <MarketTicker data={marketData} />
 
@@ -570,6 +576,8 @@ export default function WolfMissionControl() {
           </div>
         </main>
       </div>
+      {/* Mobile bottom nav — hidden on desktop */}
+      <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   )
 }
