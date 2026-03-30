@@ -1,143 +1,207 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { Volume2, VolumeX } from 'lucide-react'
+/**
+ * Wolf Audio Engine
+ * - Auto-starts on first user interaction anywhere on the page
+ * - Plays ambient background atmosphere while browsing
+ * - Win/loss SFX fires on trade result changes
+ * - soundEnabled state stored in localStorage — toggled from Config tab only
+ * - No visible UI element — completely silent/invisible in the DOM
+ */
 
-// ─── CSS for audio button pulse (injected once) ────────────────────────────
-const AUDIO_CSS = `
-@keyframes audioPulse {
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.15)}
-}
-.audio-pulse { animation: audioPulse 1s ease-in-out infinite }
-`
-function injectAudioCSS() {
-  if (typeof document === 'undefined') return
-  if (document.getElementById('wolf-audio-css')) return
-  const el = document.createElement('style')
-  el.id = 'wolf-audio-css'
-  el.textContent = AUDIO_CSS
-  document.head.appendChild(el)
-}
+import { useEffect, useRef } from 'react'
 
-// ─── Web Audio synth sounds — guaranteed fallback ─────────────────────────
-let sharedCtx: AudioContext | null = null
+const STORAGE_KEY = 'wolf_sound_enabled'
+
+// ── Shared AudioContext singleton ─────────────────────────────────────────
+let ctx: AudioContext | null = null
+let ambientNode: AudioBufferSourceNode | null = null
+let ambientGain: GainNode | null = null
+let ambientRunning = false
 
 function getCtx(): AudioContext | null {
-  if (sharedCtx && sharedCtx.state !== 'closed') {
-    if (sharedCtx.state === 'suspended') sharedCtx.resume()
-    return sharedCtx
+  if (ctx && ctx.state !== 'closed') {
+    if (ctx.state === 'suspended') ctx.resume()
+    return ctx
   }
   try {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    sharedCtx = new Ctor()
-    return sharedCtx
+    ctx = new Ctor()
+    return ctx
   } catch { return null }
 }
 
-function synthIntro() {
-  const ctx = getCtx(); if (!ctx) return
-  const t = ctx.currentTime
+// ── Synth helpers ─────────────────────────────────────────────────────────
+function playTone(
+  freq: number,
+  type: OscillatorType,
+  gainVal: number,
+  startOffset: number,
+  duration: number,
+  freqEnd?: number
+) {
+  const c = getCtx(); if (!c) return
+  const t = c.currentTime + startOffset
+  const o = c.createOscillator()
+  const g = c.createGain()
+  o.connect(g); g.connect(c.destination)
+  o.type = type
+  o.frequency.setValueAtTime(freq, t)
+  if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, t + duration)
+  g.gain.setValueAtTime(0, t)
+  g.gain.linearRampToValueAtTime(gainVal, t + 0.02)
+  g.gain.exponentialRampToValueAtTime(0.001, t + duration)
+  o.start(t)
+  o.stop(t + duration + 0.05)
+}
+
+// Ambient: low, brooding synth hum — plays while browsing
+function startAmbient() {
+  const c = getCtx(); if (!c || ambientRunning) return
+  ambientRunning = true
+
+  // Deep bass drone
+  const drone = c.createOscillator()
+  const droneGain = c.createGain()
+  drone.connect(droneGain); droneGain.connect(c.destination)
+  drone.type = 'sine'
+  drone.frequency.value = 42
+  droneGain.gain.setValueAtTime(0, c.currentTime)
+  droneGain.gain.linearRampToValueAtTime(0.06, c.currentTime + 2)
+  drone.start()
+
+  // Mid rumble layer
+  const mid = c.createOscillator()
+  const midGain = c.createGain()
+  mid.connect(midGain); midGain.connect(c.destination)
+  mid.type = 'triangle'
+  mid.frequency.value = 84
+  midGain.gain.setValueAtTime(0, c.currentTime)
+  midGain.gain.linearRampToValueAtTime(0.025, c.currentTime + 3)
+  mid.start()
+
+  // Subtle high shimmer
+  const shimmer = c.createOscillator()
+  const shimmerGain = c.createGain()
+  shimmer.connect(shimmerGain); shimmerGain.connect(c.destination)
+  shimmer.type = 'sine'
+  shimmer.frequency.value = 528
+  shimmerGain.gain.setValueAtTime(0, c.currentTime)
+  shimmerGain.gain.linearRampToValueAtTime(0.008, c.currentTime + 4)
+  shimmer.start()
+
+  // LFO for subtle movement on drone
+  const lfo = c.createOscillator()
+  const lfoGain = c.createGain()
+  lfo.connect(lfoGain); lfoGain.connect(droneGain.gain)
+  lfo.frequency.value = 0.15
+  lfoGain.gain.value = 0.02
+  lfo.start()
+
+  ambientGain = droneGain
+}
+
+function stopAmbient() {
+  if (!ctx || !ambientRunning) return
+  ambientRunning = false
+  try {
+    // Fade out — ctx might be closed
+    if (ctx.state !== 'closed' && ambientGain) {
+      ambientGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5)
+    }
+  } catch { /* ignore */ }
+}
+
+// Boot sound — fires once when audio first activates
+function playBoot() {
   // Bass thud
-  const b = ctx.createOscillator(); const bg = ctx.createGain()
-  b.connect(bg); bg.connect(ctx.destination)
-  b.type = 'sine'; b.frequency.setValueAtTime(60, t); b.frequency.exponentialRampToValueAtTime(28, t + 0.5)
-  bg.gain.setValueAtTime(0.6, t); bg.gain.exponentialRampToValueAtTime(0.001, t + 0.55)
-  b.start(t); b.stop(t + 0.55)
-  // Rising synth
-  const r = ctx.createOscillator(); const rg = ctx.createGain()
-  r.connect(rg); rg.connect(ctx.destination)
-  r.type = 'sawtooth'; r.frequency.setValueAtTime(180, t + 0.3); r.frequency.exponentialRampToValueAtTime(540, t + 1.0)
-  rg.gain.setValueAtTime(0, t + 0.3); rg.gain.linearRampToValueAtTime(0.1, t + 0.45); rg.gain.exponentialRampToValueAtTime(0.001, t + 1.05)
-  r.start(t + 0.3); r.stop(t + 1.05)
+  playTone(55, 'sine', 0.5, 0, 0.6, 28)
+  // Rising cinematic hit
+  playTone(200, 'sawtooth', 0.08, 0.3, 0.9, 600)
   // Terminal ping
-  const p = ctx.createOscillator(); const pg = ctx.createGain()
-  p.connect(pg); pg.connect(ctx.destination)
-  p.type = 'sine'; p.frequency.value = 1100
-  pg.gain.setValueAtTime(0, t + 0.8); pg.gain.linearRampToValueAtTime(0.2, t + 0.82); pg.gain.exponentialRampToValueAtTime(0.001, t + 1.3)
-  p.start(t + 0.8); p.stop(t + 1.3)
+  playTone(1100, 'sine', 0.15, 0.75, 0.6)
+  playTone(1320, 'sine', 0.10, 0.9, 0.5)
 }
 
-function synthWin() {
-  const ctx = getCtx(); if (!ctx) return
-  const t = ctx.currentTime
-  ;[523, 659, 784, 1047].forEach((freq, i) => {
-    const o = ctx.createOscillator(); const g = ctx.createGain()
-    o.connect(g); g.connect(ctx.destination)
-    o.type = 'sine'; o.frequency.value = freq
-    g.gain.setValueAtTime(0, t + i * 0.13)
-    g.gain.linearRampToValueAtTime(0.18, t + i * 0.13 + 0.05)
-    g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.13 + 0.5)
-    o.start(t + i * 0.13); o.stop(t + i * 0.13 + 0.55)
-  })
+// Win SFX — ascending victory
+export function synthWin() {
+  [523, 659, 784, 1047].forEach((f, i) => playTone(f, 'sine', 0.18, i * 0.12, 0.55))
 }
 
-function synthLoss() {
-  const ctx = getCtx(); if (!ctx) return
-  const t = ctx.currentTime
-  const o = ctx.createOscillator(); const g = ctx.createGain()
-  o.connect(g); g.connect(ctx.destination)
-  o.type = 'sawtooth'; o.frequency.setValueAtTime(320, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.55)
-  g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.6)
-  o.start(t); o.stop(t + 0.6)
+// Loss SFX — descending groan
+export function synthLoss() {
+  playTone(320, 'sawtooth', 0.12, 0, 0.6, 110)
+  playTone(180, 'sine', 0.08, 0.15, 0.5)
 }
 
-// ─── Component ────────────────────────────────────────────────────────────
+// Navigation click tick — very subtle
+export function synthClick() {
+  playTone(880, 'sine', 0.04, 0, 0.08)
+}
+
+// ── Component — invisible, lives in page root ─────────────────────────────
 interface IntroAudioProps {
   soundEnabled: boolean
-  onToggle: () => void
   lastTradeResult?: 'win' | 'loss' | null
 }
 
-export function IntroAudio({ soundEnabled, onToggle, lastTradeResult }: IntroAudioProps) {
-  const introPlayed = useRef(false)
-  const [mounted, setMounted] = useState(false)
+export function IntroAudio({ soundEnabled, lastTradeResult }: IntroAudioProps) {
+  const bootedRef = useRef(false)
+  const prevResult = useRef<string | null>(null)
 
+  // Handle soundEnabled toggled ON or OFF from config
   useEffect(() => {
-    injectAudioCSS()
-    setMounted(true)
-  }, [])
+    if (soundEnabled) {
+      if (!bootedRef.current) {
+        bootedRef.current = true
+        getCtx()
+        playBoot()
+        setTimeout(startAmbient, 1200)
+      } else {
+        getCtx() // resume if suspended
+        if (!ambientRunning) startAmbient()
+      }
+    } else {
+      stopAmbient()
+    }
+  }, [soundEnabled])
 
-  // Win/loss reactive sounds
+  // Auto-start on first user interaction if soundEnabled
+  useEffect(() => {
+    if (!soundEnabled) return
+
+    const handler = () => {
+      if (bootedRef.current) return
+      bootedRef.current = true
+      getCtx()
+      playBoot()
+      setTimeout(startAmbient, 1200)
+      // Remove all listeners after first interaction
+      ;['click', 'keydown', 'touchstart', 'scroll'].forEach(ev =>
+        document.removeEventListener(ev, handler)
+      )
+    }
+
+    ;['click', 'keydown', 'touchstart', 'scroll'].forEach(ev =>
+      document.addEventListener(ev, handler, { passive: true, once: false })
+    )
+
+    return () => {
+      ;['click', 'keydown', 'touchstart', 'scroll'].forEach(ev =>
+        document.removeEventListener(ev, handler)
+      )
+    }
+  }, [soundEnabled])
+
+  // Win/loss reactive SFX
   useEffect(() => {
     if (!soundEnabled || !lastTradeResult) return
+    if (lastTradeResult === prevResult.current) return
+    prevResult.current = lastTradeResult
     if (lastTradeResult === 'win') synthWin()
-    else synthLoss()
+    else if (lastTradeResult === 'loss') synthLoss()
   }, [lastTradeResult, soundEnabled])
 
-  const handleClick = () => {
-    const enabling = !soundEnabled
-    onToggle()
-
-    if (enabling) {
-      // AudioContext MUST be created on this exact user gesture
-      getCtx()
-      if (!introPlayed.current) {
-        introPlayed.current = true
-        setTimeout(synthIntro, 80)
-      }
-    }
-  }
-
-  if (!mounted) return null
-
-  return (
-    <button
-      onClick={handleClick}
-      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all border ${
-        soundEnabled
-          ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 hover:bg-amber-500/30'
-          : 'bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-amber-500/30'
-      }`}
-      title={soundEnabled ? 'Sound ON — click to mute' : 'Sound OFF — click to enable'}
-    >
-      {soundEnabled
-        ? <Volume2 className={`h-3.5 w-3.5 ${soundEnabled ? 'audio-pulse' : ''}`} />
-        : <VolumeX className="h-3.5 w-3.5" />
-      }
-      <span className="hidden sm:inline text-[11px]">{soundEnabled ? 'AUDIO ON' : 'AUDIO OFF'}</span>
-    </button>
-  )
+  // Nothing rendered — completely invisible
+  return null
 }
-
-export { synthWin, synthLoss, synthIntro }

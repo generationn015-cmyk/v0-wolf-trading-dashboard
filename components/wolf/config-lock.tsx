@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Lock, Unlock, Eye, EyeOff, Shield } from 'lucide-react'
+import { Lock, Unlock, Eye, EyeOff, Shield, Volume2, VolumeX } from 'lucide-react'
 
 // Config page password lock — stored in localStorage (client-side only)
 // Not server-auth — this is a UI gate to prevent casual viewers
@@ -17,9 +17,11 @@ async function hashPassword(pw: string): Promise<string> {
 
 interface ConfigLockProps {
   children: React.ReactNode
+  soundEnabled?: boolean
+  onToggleSound?: () => void
 }
 
-export function ConfigLock({ children }: ConfigLockProps) {
+export function ConfigLock({ children, soundEnabled = false, onToggleSound }: ConfigLockProps) {
   const [unlocked, setUnlocked] = useState(false)
   const [hasPassword, setHasPassword] = useState(false)
   const [mode, setMode] = useState<'check' | 'set' | 'enter'>('check')
@@ -93,6 +95,41 @@ export function ConfigLock({ children }: ConfigLockProps) {
             Lock
           </button>
         </div>
+
+        {/* Audio control — only accessible behind the password lock */}
+        {onToggleSound && (
+          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#161624] px-5 py-4 mb-6">
+            <div className="flex items-center gap-3">
+              {soundEnabled
+                ? <Volume2 className="h-5 w-5 text-amber-400" />
+                : <VolumeX className="h-5 w-5 text-zinc-500" />
+              }
+              <div>
+                <p className="text-sm font-bold text-white">Site Audio</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  {soundEnabled
+                    ? 'Ambient audio + trade SFX active'
+                    : 'All audio muted — click to enable'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onToggleSound}
+              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 focus:outline-none ${
+                soundEnabled ? 'bg-amber-500 border-amber-400' : 'bg-zinc-800 border-zinc-600'
+              }`}
+              role="switch"
+              aria-checked={soundEnabled}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${
+                  soundEnabled ? 'translate-x-5' : 'translate-x-0.5'
+                } mt-0.5`}
+              />
+            </button>
+          </div>
+        )}
+
         {children}
       </div>
     )

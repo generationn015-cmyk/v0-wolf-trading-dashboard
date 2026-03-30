@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { TickerBanner } from '@/components/wolf/ticker-banner'
-import { IntroAudio } from '@/components/wolf/intro-audio'
 import { WolfAnimation } from '@/components/wolf/wolf-animation'
 import { Bell, Settings, RefreshCw, Wifi, WifiOff, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,11 +18,9 @@ interface HeaderProps {
   wolfStatus: WolfStatus
   onRefresh: () => void
   isConnected: boolean
-  soundEnabled?: boolean
-  onToggleSound?: () => void
 }
 
-export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = false, onToggleSound }: HeaderProps) {
+export function Header({ wolfStatus, onRefresh, isConnected }: HeaderProps) {
   const [nyseTime, setNyseTime] = useState<string | null>(null)
   const [marketOpen, setMarketOpen] = useState(false)
 
@@ -141,10 +138,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
               <Badge variant="outline" className="font-mono font-bold">{wolfStatus.openPositions}</Badge>
             </div>
 
-            {/* Sound — IntroAudio handles AudioContext creation on click */}
-            {onToggleSound && (
-              <IntroAudio soundEnabled={soundEnabled} onToggle={onToggleSound} />
-            )}
+
 
             {/* Refresh */}
             <Button variant="ghost" size="icon" onClick={onRefresh} className="text-muted-foreground hover:text-amber-500">

@@ -19,6 +19,7 @@ import { Achievements } from '@/components/wolf/achievements'
 import { StreakCounter } from '@/components/wolf/streak-counter'
 import { BelfortQuotes } from '@/components/wolf/belfort-quotes'
 import { TraderRank } from '@/components/wolf/trader-rank'
+import { IntroAudio } from '@/components/wolf/intro-audio'
 import { Confetti } from '@/components/wolf/confetti'
 import { 
   generatePnLData, 
@@ -37,7 +38,10 @@ export default function WolfMissionControl() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isConnected, setIsConnected] = useState(true)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
-  const [soundEnabled, setSoundEnabled] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('wolf_sound_enabled') === 'true'
+  })
   const [showConfetti, setShowConfetti] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [useApiData, setUseApiData] = useState(true)
@@ -246,7 +250,11 @@ export default function WolfMissionControl() {
   }, [useApiData, refreshApiState])
 
   const handleToggleSound = useCallback(() => {
-    setSoundEnabled(prev => !prev)
+    setSoundEnabled(prev => {
+      const next = !prev
+      if (typeof window !== 'undefined') localStorage.setItem('wolf_sound_enabled', String(next))
+      return next
+    })
   }, [])
 
   // Trigger celebration for big wins
@@ -265,12 +273,12 @@ export default function WolfMissionControl() {
       <Confetti active={showConfetti} duration={4000} />
       
       {/* Header */}
+      {/* Global audio engine — invisible, auto-starts on first interaction */}
+      <IntroAudio soundEnabled={soundEnabled} />
       <Header 
         wolfStatus={wolfStatus} 
         onRefresh={handleRefresh} 
         isConnected={isConnected}
-        soundEnabled={soundEnabled}
-        onToggleSound={handleToggleSound}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -473,7 +481,7 @@ export default function WolfMissionControl() {
           )}
 
           {activeTab === 'settings' && (
-            <ConfigLock>
+            <ConfigLock soundEnabled={soundEnabled} onToggleSound={handleToggleSound}>
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-black text-foreground tracking-tight">⚙️ CONFIGURE — System Settings</h2>
