@@ -3,55 +3,63 @@
 import { useEffect, useRef, useState } from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
 
-// ─── All audio is synthesized via Web Audio API ─────────────────────────────
-// This guarantees it works everywhere — no external files, no CDN deps, no CORS
+// ─── CSS for audio button pulse (injected once) ────────────────────────────
+const AUDIO_CSS = `
+@keyframes audioPulse {
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+}
+.audio-pulse { animation: audioPulse 1s ease-in-out infinite }
+`
+function injectAudioCSS() {
+  if (typeof document === 'undefined') return
+  if (document.getElementById('wolf-audio-css')) return
+  const el = document.createElement('style')
+  el.id = 'wolf-audio-css'
+  el.textContent = AUDIO_CSS
+  document.head.appendChild(el)
+}
 
-function createCtx(): AudioContext | null {
+// ─── Web Audio synth sounds — guaranteed fallback ─────────────────────────
+let sharedCtx: AudioContext | null = null
+
+function getCtx(): AudioContext | null {
+  if (sharedCtx && sharedCtx.state !== 'closed') {
+    if (sharedCtx.state === 'suspended') sharedCtx.resume()
+    return sharedCtx
+  }
   try {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    return new Ctor()
+    sharedCtx = new Ctor()
+    return sharedCtx
   } catch { return null }
 }
 
-function resumeCtx(ctx: AudioContext) {
-  if (ctx.state === 'suspended') ctx.resume()
-}
-
-// Intro: dark bass hit + rising synth + terminal ping — "Wolf is online"
-function playIntro(ctx: AudioContext) {
+function synthIntro() {
+  const ctx = getCtx(); if (!ctx) return
   const t = ctx.currentTime
-
-  const bass = ctx.createOscillator(); const bg = ctx.createGain()
-  bass.connect(bg); bg.connect(ctx.destination)
-  bass.type = 'sine'
-  bass.frequency.setValueAtTime(60, t)
-  bass.frequency.exponentialRampToValueAtTime(28, t + 0.45)
-  bg.gain.setValueAtTime(0.55, t)
-  bg.gain.exponentialRampToValueAtTime(0.001, t + 0.5)
-  bass.start(t); bass.stop(t + 0.5)
-
-  const rise = ctx.createOscillator(); const rg = ctx.createGain()
-  rise.connect(rg); rg.connect(ctx.destination)
-  rise.type = 'sawtooth'
-  rise.frequency.setValueAtTime(180, t + 0.3)
-  rise.frequency.exponentialRampToValueAtTime(540, t + 0.95)
-  rg.gain.setValueAtTime(0, t + 0.3)
-  rg.gain.linearRampToValueAtTime(0.1, t + 0.45)
-  rg.gain.exponentialRampToValueAtTime(0.001, t + 1.0)
-  rise.start(t + 0.3); rise.stop(t + 1.0)
-
-  const ping = ctx.createOscillator(); const pg = ctx.createGain()
-  ping.connect(pg); pg.connect(ctx.destination)
-  ping.type = 'sine'
-  ping.frequency.setValueAtTime(1100, t + 0.8)
-  pg.gain.setValueAtTime(0, t + 0.8)
-  pg.gain.linearRampToValueAtTime(0.18, t + 0.82)
-  pg.gain.exponentialRampToValueAtTime(0.001, t + 1.3)
-  ping.start(t + 0.8); ping.stop(t + 1.3)
+  // Bass thud
+  const b = ctx.createOscillator(); const bg = ctx.createGain()
+  b.connect(bg); bg.connect(ctx.destination)
+  b.type = 'sine'; b.frequency.setValueAtTime(60, t); b.frequency.exponentialRampToValueAtTime(28, t + 0.5)
+  bg.gain.setValueAtTime(0.6, t); bg.gain.exponentialRampToValueAtTime(0.001, t + 0.55)
+  b.start(t); b.stop(t + 0.55)
+  // Rising synth
+  const r = ctx.createOscillator(); const rg = ctx.createGain()
+  r.connect(rg); rg.connect(ctx.destination)
+  r.type = 'sawtooth'; r.frequency.setValueAtTime(180, t + 0.3); r.frequency.exponentialRampToValueAtTime(540, t + 1.0)
+  rg.gain.setValueAtTime(0, t + 0.3); rg.gain.linearRampToValueAtTime(0.1, t + 0.45); rg.gain.exponentialRampToValueAtTime(0.001, t + 1.05)
+  r.start(t + 0.3); r.stop(t + 1.05)
+  // Terminal ping
+  const p = ctx.createOscillator(); const pg = ctx.createGain()
+  p.connect(pg); pg.connect(ctx.destination)
+  p.type = 'sine'; p.frequency.value = 1100
+  pg.gain.setValueAtTime(0, t + 0.8); pg.gain.linearRampToValueAtTime(0.2, t + 0.82); pg.gain.exponentialRampToValueAtTime(0.001, t + 1.3)
+  p.start(t + 0.8); p.stop(t + 1.3)
 }
 
-// Win: ascending 4-note arpeggio — cash register vibe
-function playWin(ctx: AudioContext) {
+function synthWin() {
+  const ctx = getCtx(); if (!ctx) return
   const t = ctx.currentTime
   ;[523, 659, 784, 1047].forEach((freq, i) => {
     const o = ctx.createOscillator(); const g = ctx.createGain()
@@ -64,21 +72,17 @@ function playWin(ctx: AudioContext) {
   })
 }
 
-// Loss: descending sawtooth
-function playLoss(ctx: AudioContext) {
+function synthLoss() {
+  const ctx = getCtx(); if (!ctx) return
   const t = ctx.currentTime
   const o = ctx.createOscillator(); const g = ctx.createGain()
   o.connect(g); g.connect(ctx.destination)
-  o.type = 'sawtooth'
-  o.frequency.setValueAtTime(320, t)
-  o.frequency.exponentialRampToValueAtTime(120, t + 0.5)
-  g.gain.setValueAtTime(0.14, t)
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.55)
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(320, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.55)
+  g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.6)
   o.start(t); o.stop(t + 0.6)
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
+// ─── Component ────────────────────────────────────────────────────────────
 interface IntroAudioProps {
   soundEnabled: boolean
   onToggle: () => void
@@ -86,59 +90,54 @@ interface IntroAudioProps {
 }
 
 export function IntroAudio({ soundEnabled, onToggle, lastTradeResult }: IntroAudioProps) {
-  const ctxRef = useRef<AudioContext | null>(null)
-  const introPlayedRef = useRef(false)
+  const introPlayed = useRef(false)
+  const [mounted, setMounted] = useState(false)
 
-  // On enable toggle: immediately create + resume context, play intro
-  const handleToggle = () => {
-    const willEnable = !soundEnabled
+  useEffect(() => {
+    injectAudioCSS()
+    setMounted(true)
+  }, [])
+
+  // Win/loss reactive sounds
+  useEffect(() => {
+    if (!soundEnabled || !lastTradeResult) return
+    if (lastTradeResult === 'win') synthWin()
+    else synthLoss()
+  }, [lastTradeResult, soundEnabled])
+
+  const handleClick = () => {
+    const enabling = !soundEnabled
     onToggle()
 
-    if (willEnable) {
-      // Create context on this user gesture — guaranteed to work
-      if (!ctxRef.current) ctxRef.current = createCtx()
-      if (ctxRef.current) {
-        resumeCtx(ctxRef.current)
-        if (!introPlayedRef.current) {
-          introPlayedRef.current = true
-          // Small delay so toggle animation renders first
-          setTimeout(() => {
-            if (ctxRef.current) {
-              resumeCtx(ctxRef.current)
-              playIntro(ctxRef.current)
-            }
-          }, 50)
-        }
+    if (enabling) {
+      // AudioContext MUST be created on this exact user gesture
+      getCtx()
+      if (!introPlayed.current) {
+        introPlayed.current = true
+        setTimeout(synthIntro, 80)
       }
     }
   }
 
-  // Win/loss sounds
-  useEffect(() => {
-    if (!soundEnabled || !lastTradeResult) return
-    if (!ctxRef.current) ctxRef.current = createCtx()
-    if (!ctxRef.current) return
-    resumeCtx(ctxRef.current)
-    if (lastTradeResult === 'win') playWin(ctxRef.current)
-    else playLoss(ctxRef.current)
-  }, [lastTradeResult, soundEnabled])
+  if (!mounted) return null
 
   return (
     <button
-      onClick={handleToggle}
+      onClick={handleClick}
       className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all border ${
         soundEnabled
-          ? 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500/30'
-          : 'bg-secondary border-border text-muted-foreground hover:text-foreground'
+          ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 hover:bg-amber-500/30'
+          : 'bg-secondary border-border text-muted-foreground hover:text-foreground hover:border-amber-500/30'
       }`}
       title={soundEnabled ? 'Sound ON — click to mute' : 'Sound OFF — click to enable'}
     >
       {soundEnabled
-        ? <Volume2 className="h-3.5 w-3.5 animate-pulse" />
-        : <VolumeX className="h-3.5 w-3.5" />}
+        ? <Volume2 className={`h-3.5 w-3.5 ${soundEnabled ? 'audio-pulse' : ''}`} />
+        : <VolumeX className="h-3.5 w-3.5" />
+      }
       <span className="hidden sm:inline text-[11px]">{soundEnabled ? 'AUDIO ON' : 'AUDIO OFF'}</span>
     </button>
   )
 }
 
-export { playWin, playLoss, playIntro }
+export { synthWin, synthLoss, synthIntro }

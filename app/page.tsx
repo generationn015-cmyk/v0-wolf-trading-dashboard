@@ -5,7 +5,6 @@ import useSWR from 'swr'
 import { Header } from '@/components/wolf/header'
 import { MobileNav } from '@/components/wolf/mobile-nav'
 import { MobileDashboard } from '@/components/wolf/mobile-dashboard'
-import { IntroAudio } from '@/components/wolf/intro-audio'
 import { Sidebar } from '@/components/wolf/sidebar'
 import { StatsCards } from '@/components/wolf/stats-cards'
 import { PnLChart } from '@/components/wolf/pnl-chart'
@@ -266,17 +265,13 @@ export default function WolfMissionControl() {
       <Confetti active={showConfetti} duration={4000} />
       
       {/* Header */}
-      <div className="flex flex-col">
-        <Header 
-          wolfStatus={wolfStatus} 
-          onRefresh={handleRefresh} 
-          isConnected={isConnected}
-          soundEnabled={soundEnabled}
-          onToggleSound={handleToggleSound}
-        />
-        {/* Audio engine — hidden, handles intro sound + trade sfx */}
-        <IntroAudio soundEnabled={soundEnabled} onToggle={handleToggleSound} />
-      </div>
+      <Header 
+        wolfStatus={wolfStatus} 
+        onRefresh={handleRefresh} 
+        isConnected={isConnected}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}

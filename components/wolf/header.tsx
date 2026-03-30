@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { TickerBanner } from '@/components/wolf/ticker-banner'
+import { IntroAudio } from '@/components/wolf/intro-audio'
 import { WolfAnimation } from '@/components/wolf/wolf-animation'
-import { Bell, Settings, RefreshCw, Wifi, WifiOff, Volume2, VolumeX, TrendingUp } from 'lucide-react'
+import { Bell, Settings, RefreshCw, Wifi, WifiOff, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -140,11 +141,9 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
               <Badge variant="outline" className="font-mono font-bold">{wolfStatus.openPositions}</Badge>
             </div>
 
-            {/* Sound */}
+            {/* Sound — IntroAudio handles AudioContext creation on click */}
             {onToggleSound && (
-              <Button variant="ghost" size="icon" onClick={onToggleSound} className="text-muted-foreground hover:text-foreground">
-                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              </Button>
+              <IntroAudio soundEnabled={soundEnabled} onToggle={onToggleSound} />
             )}
 
             {/* Refresh */}
