@@ -10,6 +10,7 @@ export interface Trade {
   timestamp: Date
   confidence: number
   strategy: string
+  size?: number  // USD position size (stake)
 }
 
 export interface WolfStatus {

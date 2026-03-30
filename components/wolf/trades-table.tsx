@@ -137,6 +137,7 @@ export function TradesTable({ trades }: TradesTableProps) {
                   <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold min-w-[200px]">Market</TableHead>
                   <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Side</TableHead>
                   <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Entry</TableHead>
+                  <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Size</TableHead>
                   <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Exit</TableHead>
                   <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-right">P&L</TableHead>
                   <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Conf</TableHead>

@@ -44,11 +44,16 @@ export function generateDdubData(): DdubIndexData[] {
 // Mock trades — Polymarket prediction market style
 export function generateTrades(): Trade[] {
   const markets = [
-    { symbol: 'Will BTC exceed $100K before June?', strategy: 'value_bet' },
-    { symbol: 'Will Harvey Weinstein sentence be extended?', strategy: 'value_bet' },
-    { symbol: 'Will Italy qualify for 2026 FIFA World Cup?', strategy: 'value_bet' },
-    { symbol: 'Will Sweden qualify for 2026 FIFA World Cup?', strategy: 'value_bet' },
-    { symbol: 'New Rihanna album before GTA VI?', strategy: 'value_bet' },
+    { symbol: 'Will BTC exceed $100K before June?', strategy: 'value_bet',
+    size: Math.round((Math.random() * 180 + 20) * 100) / 100 },
+    { symbol: 'Will Harvey Weinstein sentence be extended?', strategy: 'value_bet',
+    size: Math.round((Math.random() * 180 + 20) * 100) / 100 },
+    { symbol: 'Will Italy qualify for 2026 FIFA World Cup?', strategy: 'value_bet',
+    size: Math.round((Math.random() * 180 + 20) * 100) / 100 },
+    { symbol: 'Will Sweden qualify for 2026 FIFA World Cup?', strategy: 'value_bet',
+    size: Math.round((Math.random() * 180 + 20) * 100) / 100 },
+    { symbol: 'New Rihanna album before GTA VI?', strategy: 'value_bet',
+    size: Math.round((Math.random() * 180 + 20) * 100) / 100 },
     { symbol: 'Will Fed cut rates in May 2026?', strategy: 'copy_trading' },
     { symbol: 'Will Trump sign new crypto bill in Q2?', strategy: 'copy_trading' },
     { symbol: 'Will ETH flip BTC in market cap by 2027?', strategy: 'copy_trading' },

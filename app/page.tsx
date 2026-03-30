@@ -111,6 +111,7 @@ export default function WolfMissionControl() {
         timestamp: typeof t.entryTime === 'number' ? new Date(t.entryTime) : t.entryTime ? new Date(t.entryTime) : new Date(),
         confidence: t.confidence ?? 0.75,
         strategy: t.strategy ?? 'unknown',
+        size: t.quantity ?? undefined,
       }))
     : mockTrades
 
