@@ -65,7 +65,9 @@ export default function WolfMissionControl() {
     learningProgress: 0,
     lastActivity: null,
     openPositions: 0,
-    riskLevel: 'MEDIUM'
+    riskLevel: 'MEDIUM',
+    balance: 10000,
+    paperMode: true,
   })
   const [mockActivityLogs, setMockActivityLogs] = useState<ActivityLog[]>([])
   const [mockMarketData, setMockMarketData] = useState<MarketData[]>([])
@@ -131,6 +133,8 @@ export default function WolfMissionControl() {
         lastActivity: apiState.data.lastUpdated ? new Date(apiState.data.lastUpdated) : null,
         openPositions: (apiState.data.trades ?? []).filter((t: {status: string}) => t.status === 'OPEN' || t.status === 'open').length,
         riskLevel: 'MEDIUM' as const,
+        balance: apiState.data.performance?.balance ?? undefined,
+        paperMode: apiState.data.performance?.paperMode ?? true,
       }
     : mockWolfStatus
 
@@ -256,6 +260,13 @@ export default function WolfMissionControl() {
       if (typeof window !== 'undefined') localStorage.setItem('wolf_sound_enabled', String(next))
       return next
     })
+  }, [])
+
+  const handleGoLive = useCallback(async () => {
+    // POST to Wolf VPS webhook to flip PAPER_MODE=false and restart
+    try {
+      await fetch('/api/wolf/go-live', { method: 'POST' })
+    } catch { /* best effort */ }
   }, [])
 
   // Trigger celebration for big wins

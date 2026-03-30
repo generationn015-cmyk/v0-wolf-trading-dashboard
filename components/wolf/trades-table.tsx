@@ -1,6 +1,7 @@
 'use client'
 
-import { ArrowUpRight, ArrowDownRight, Sparkles, TrendingUp, Target, Clock, DollarSign, Timer, AlertTriangle } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowUpRight, ArrowDownRight, Sparkles, TrendingUp, Target, Clock, DollarSign, Timer, AlertTriangle, Zap, Shield, X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -16,6 +17,8 @@ import type { Trade } from '@/lib/wolf-types'
 
 interface TradesTableProps {
   trades: Trade[]
+  paperMode?: boolean
+  onGoLive?: () => void
 }
 
 const MAX_HOLD_HOURS = 12 // Wolf force-exit threshold
@@ -65,7 +68,8 @@ const formatSymbol = (symbol: string) => {
   return symbol.slice(0, 26) + '…'
 }
 
-export function TradesTable({ trades }: TradesTableProps) {
+export function TradesTable({ trades, paperMode = true, onGoLive }: TradesTableProps) {
+  const [showGoLiveModal, setShowGoLiveModal] = useState(false)
   const openTrades = trades.filter(t => t.status === 'OPEN')
   const closedTrades = trades.filter(t => t.status === 'CLOSED')
   const totalRealizedPnL = closedTrades.reduce((sum, t) => sum + (t.pnl || 0), 0)
@@ -119,9 +123,84 @@ export function TradesTable({ trades }: TradesTableProps) {
               <Timer className="h-3 w-3 mr-1" />
               Max hold: {MAX_HOLD_HOURS}h
             </Badge>
+            {/* Go Live button */}
+            {paperMode ? (
+              <button
+                onClick={() => setShowGoLiveModal(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/60 active:scale-95 transition-all px-3 py-1.5 text-xs font-black text-emerald-400 tracking-wider"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                GO LIVE
+              </button>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/50 px-3 py-1.5 text-xs font-black text-emerald-400 tracking-wider animate-pulse">
+                <Zap className="h-3.5 w-3.5" />
+                LIVE
+              </span>
+            )}
           </div>
         </div>
       </CardHeader>
+
+      {/* Go Live confirmation modal */}
+      {showGoLiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-[#0d0d1a] border border-emerald-500/30 shadow-2xl shadow-emerald-500/10 p-6">
+            {/* Close */}
+            <button
+              onClick={() => setShowGoLiveModal(false)}
+              className="absolute top-4 right-4 text-zinc-600 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Icon */}
+            <div className="flex justify-center mb-5">
+              <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                <Zap className="h-8 w-8 text-emerald-400" />
+              </div>
+            </div>
+
+            <h2 className="text-xl font-black text-white text-center mb-1 tracking-tight">GO LIVE</h2>
+            <p className="text-xs text-zinc-500 text-center mb-6">This will switch Wolf from paper trading to executing real trades with real money. There is no undo.</p>
+
+            <div className="space-y-3 mb-6">
+              <div className="flex items-start gap-3 rounded-xl bg-amber-500/5 border border-amber-500/20 p-3">
+                <Shield className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-amber-400">Risk Acknowledgment</p>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Real capital is at risk. Kill switch is armed at -40%. Ensure your Polymarket wallet is funded before proceeding.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-xl bg-zinc-800/50 border border-white/5 p-3">
+                <Zap className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-white">What happens next</p>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Wolf will set WOLF_PAPER_MODE=false on the VPS and restart. First live trade entry alert will arrive on Telegram.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowGoLiveModal(false)}
+                className="flex-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all py-3 text-sm font-bold text-zinc-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowGoLiveModal(false)
+                  onGoLive?.()
+                }}
+                className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all py-3 text-sm font-black text-black tracking-wider"
+              >
+                ACTIVATE LIVE TRADING
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <CardContent className="p-0 flex-1 min-h-0">
         {trades.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-12 text-center">

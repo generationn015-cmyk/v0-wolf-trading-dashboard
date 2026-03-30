@@ -24,6 +24,8 @@ export interface WolfStatus {
   lastActivity: Date | null
   openPositions: number
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
+  balance?: number
+  paperMode?: boolean
 }
 
 export interface MarketData {

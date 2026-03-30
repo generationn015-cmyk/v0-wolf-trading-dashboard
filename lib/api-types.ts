@@ -47,6 +47,8 @@ export interface PerformanceUpdate {
   winStreak: number
   bestStreak: number
   totalProfit: number
+  balance?: number        // Current account balance (paper or live)
+  paperMode?: boolean     // True = paper trading, False = live
 }
 
 export interface MarketDataUpdate {
