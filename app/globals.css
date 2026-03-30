@@ -240,3 +240,49 @@
     padding: 6px 8px;
   }
 }
+
+/* ── Mobile Native Feel ──────────────────────────────────────────────────────── */
+
+/* Smooth tab transitions */
+@media (max-width: 1023px) {
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Remove tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mobile card enter animation */
+  .mobile-fade-in {
+    animation: mobileFadeIn 0.2s ease-out both;
+  }
+
+  @keyframes mobileFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Smooth main content transition on tab change */
+  main > div:first-child > div {
+    animation: mobileFadeIn 0.18s ease-out both;
+  }
+}
+
+/* Safe area for iPhone home bar */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  nav[class*="fixed bottom"] {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Scrollbar hide on mobile */
+@media (max-width: 1023px) {
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}

@@ -77,8 +77,8 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
 
   return (
     <div className="flex flex-col border-b border-border">
-      {/* Top banner — Belfort ticker */}
-      <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-1 overflow-hidden">
+      {/* Top banner — Belfort ticker (desktop only) */}
+      <div className="hidden lg:block bg-amber-500/10 border-b border-amber-500/20 px-6 py-1 overflow-hidden">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 overflow-hidden">
             <span className="text-amber-500 font-black text-[11px] tracking-[0.2em] shrink-0">🐺 STRATTON OAKMONT</span>
@@ -97,16 +97,16 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
       </div>
 
       {/* Main header */}
-      <header className="bg-card px-6 py-3">
+      <header className="bg-card px-4 lg:px-6 py-2.5 lg:py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30">
-                <span className="text-3xl">🐺</span>
-                <span className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
+              <div className="relative flex h-9 w-9 lg:h-12 lg:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30">
+                <span className="text-xl lg:text-3xl">🐺</span>
+                <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
               </div>
-              <div>
+              <div className="hidden sm:block">
                 <h1 className="text-base lg:text-lg font-black text-foreground tracking-tight">
                   WOLF <span className="text-amber-500">OF ALL STREETS</span>
                 </h1>
@@ -115,7 +115,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
             </div>
 
             {/* Connection */}
-            <div className="ml-2 flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
+            <div className="hidden sm:flex ml-2 items-center gap-2 rounded-full bg-secondary px-3 py-1">
               {isConnected ? (
                 <>
                   <Wifi className="h-3 w-3 text-emerald-500" />
@@ -139,7 +139,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
           {/* Right side */}
           <div className="flex items-center gap-2">
             {/* Win Rate */}
-            <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
+            <div className="hidden sm:flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Win Rate</span>
               <Badge
                 className={`font-mono text-sm font-bold ${wolfStatus.winRate >= 72
@@ -163,7 +163,7 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
             </div>
 
             {/* Open Positions */}
-            <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
+            <div className="flex items-center gap-1.5 rounded-lg bg-secondary px-2.5 py-1.5 lg:px-3 lg:py-2">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Open</span>
               <Badge variant="outline" className="font-mono font-bold">{wolfStatus.openPositions}</Badge>
             </div>

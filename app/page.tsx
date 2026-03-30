@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import useSWR from 'swr'
 import { Header } from '@/components/wolf/header'
 import { MobileNav } from '@/components/wolf/mobile-nav'
+import { MobileDashboard } from '@/components/wolf/mobile-dashboard'
 import { IntroAudio } from '@/components/wolf/intro-audio'
 import { Sidebar } from '@/components/wolf/sidebar'
 import { StatsCards } from '@/components/wolf/stats-cards'
@@ -280,7 +281,20 @@ export default function WolfMissionControl() {
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6">
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-6">
+          {/* ── Mobile view (< lg) — clean native mobile layout ── */}
+          <div className="lg:hidden">
+            <MobileDashboard
+              wolfStatus={wolfStatus}
+              trades={trades}
+              activityLogs={activityLogs}
+              marketData={marketData}
+              activeTab={activeTab}
+            />
+          </div>
+
+          {/* ── Desktop view (≥ lg) — full dashboard ── */}
+          <div className="hidden lg:block p-6">
           {activeTab === 'dashboard' && (
             <div className="space-y-4 lg:space-y-6">
               {/* Market Ticker */}
@@ -574,6 +588,8 @@ export default function WolfMissionControl() {
               </span>
             </div>
           </div>
+          </div>
+          {/* end desktop */}
         </main>
       </div>
       {/* Mobile bottom nav — hidden on desktop */}

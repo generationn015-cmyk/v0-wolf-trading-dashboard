@@ -8,44 +8,58 @@ interface MobileNavProps {
   onTabChange: (tab: string) => void
 }
 
-const mobileNavItems = [
-  { id: 'dashboard', label: 'Floor', icon: LayoutDashboard },
-  { id: 'trades', label: 'Hunts', icon: Crosshair },
-  { id: 'analytics', label: 'Intel', icon: BarChart3 },
-  { id: 'history', label: 'Ledger', icon: History },
-  { id: 'settings', label: 'Config', icon: Settings },
+const items = [
+  { id: 'dashboard', label: 'Floor',  icon: LayoutDashboard },
+  { id: 'trades',    label: 'Hunts',  icon: Crosshair },
+  { id: 'analytics', label: 'Intel',  icon: BarChart3 },
+  { id: 'history',   label: 'Ledger', icon: History },
+  { id: 'settings',  label: 'Config', icon: Settings },
 ]
 
 export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border bg-card/95 backdrop-blur-sm px-2 pb-safe-bottom lg:hidden">
-      {mobileNavItems.map((item) => {
-        const Icon = item.icon
-        const isActive = activeTab === item.id
-        return (
-          <button
-            key={item.id}
-            onClick={() => onTabChange(item.id)}
-            className={cn(
-              'flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-all min-w-[56px]',
-              isActive
-                ? 'text-amber-400'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            <Icon className={cn('h-5 w-5', isActive && 'text-amber-400')} />
-            <span className={cn(
-              'text-[10px] font-bold tracking-wide',
-              isActive ? 'text-amber-400' : 'text-muted-foreground'
-            )}>
-              {item.label}
-            </span>
-            {isActive && (
-              <span className="absolute bottom-1 w-1 h-1 rounded-full bg-amber-400" />
-            )}
-          </button>
-        )
-      })}
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
+      {/* Top border glow */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+
+      <div className="flex items-center justify-around bg-[#0d0d1a]/95 backdrop-blur-xl px-1 py-2">
+        {items.map(item => {
+          const Icon = item.icon
+          const active = activeTab === item.id
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className="relative flex flex-col items-center gap-1 px-3 py-2 transition-transform duration-150 active:scale-95"
+            >
+              {/* Active pill background */}
+              {active && (
+                <span className="absolute inset-0 rounded-xl bg-amber-500/10" />
+              )}
+
+              <Icon
+                className={cn(
+                  'relative h-5 w-5 transition-colors duration-200',
+                  active ? 'text-amber-400' : 'text-zinc-600'
+                )}
+                strokeWidth={active ? 2.5 : 1.8}
+              />
+              <span
+                className={cn(
+                  'relative text-[10px] font-bold tracking-wide transition-colors duration-200',
+                  active ? 'text-amber-400' : 'text-zinc-600'
+                )}
+              >
+                {item.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
     </nav>
   )
 }
