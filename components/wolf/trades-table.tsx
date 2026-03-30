@@ -262,6 +262,14 @@ export function TradesTable({ trades, paperMode = true, onGoLive }: TradesTableP
                       {/* Entry */}
                       <TableCell className="font-mono text-xs font-bold">${trade.entry.toFixed(3)}</TableCell>
 
+                      {/* Size — USD position stake */}
+                      <TableCell className="font-mono text-xs font-black">
+                        {trade.size != null && trade.size > 0
+                          ? <span className="text-amber-400">${trade.size.toFixed(2)}</span>
+                          : <span className="text-zinc-600">—</span>
+                        }
+                      </TableCell>
+
                       {/* Exit */}
                       <TableCell className="font-mono text-xs">
                         {trade.exit ? (

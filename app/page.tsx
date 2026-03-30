@@ -12,6 +12,8 @@ import { DdubIndexChart } from '@/components/wolf/ddub-index-chart'
 import { TradesTable } from '@/components/wolf/trades-table'
 import { ActivityFeed } from '@/components/wolf/activity-feed'
 import { MarketTicker } from '@/components/wolf/market-ticker'
+import { BelfortSoundboard } from '@/components/wolf/belfort-soundboard'
+import { SiteLock } from '@/components/wolf/site-lock'
 import { LearningPanel } from '@/components/wolf/learning-panel'
 import { EvolutionPanel } from '@/components/wolf/evolution-panel'
 import { ConfigLock } from '@/components/wolf/config-lock'
@@ -280,6 +282,7 @@ export default function WolfMissionControl() {
   }, [])
 
   return (
+    <SiteLock>
     <div className="flex h-screen flex-col bg-background">
       {/* Confetti overlay */}
       <Confetti active={showConfetti} duration={4000} />
@@ -315,8 +318,13 @@ export default function WolfMissionControl() {
           <div className="hidden lg:block p-6">
           {activeTab === 'dashboard' && (
             <div className="space-y-4 lg:space-y-6">
-              {/* Market Ticker */}
-              <MarketTicker data={marketData} trades={trades} />
+              {/* Top row: Market Ticker + Belfort Soundboard */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                  <MarketTicker data={marketData} trades={trades} />
+                </div>
+                <BelfortSoundboard />
+              </div>
 
               {/* Motivational Quote */}
               <BelfortQuotes />
@@ -614,5 +622,6 @@ export default function WolfMissionControl() {
       {/* Mobile bottom nav — hidden on desktop */}
       <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
+  </SiteLock>
   )
 }
