@@ -19,7 +19,7 @@ export interface WolfStatus {
   weeklyPnL: number
   monthlyPnL: number
   learningProgress: number
-  lastActivity: Date
+  lastActivity: Date | null
   openPositions: number
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
 }
