@@ -437,7 +437,7 @@ function MobileConfig() {
 }
 
 // ─── Root export ─────────────────────────────────────────────────────────────
-export function MobileDashboard({ wolfStatus, trades, activityLogs, marketData, activeTab }: MobileDashboardProps) {
+export function MobileDashboard({ wolfStatus, trades, activityLogs, marketData, activeTab, onTabChange }: MobileDashboardProps) {
   const tabTitles: Record<string, { title: string; sub: string }> = {
     dashboard: { title: 'The Floor', sub: 'Mission Control' },
     trades:    { title: 'Hunt Log', sub: 'Active Positions' },

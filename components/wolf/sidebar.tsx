@@ -1,6 +1,5 @@
 'use client'
 
-import { WolfAnimation } from '@/components/wolf/wolf-animation'
 import {
   LayoutDashboard,
   TrendingUp,
@@ -79,8 +78,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           <div className="absolute inset-0 opacity-5 pointer-events-none">
             <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full border-4 border-amber-500" />
           </div>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 overflow-hidden">
-            <WolfAnimation size={36} />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30">
+            <span className="text-xl">🐺</span>
           </div>
           <div className="hidden lg:block relative z-10">
             <p className="text-xs font-black text-amber-400 tracking-wider">WOLF v2.5</p>
