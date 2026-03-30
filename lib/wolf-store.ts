@@ -1,7 +1,6 @@
-// Wolf store with Vercel KV persistence
-// Falls back to in-memory if KV not configured (local dev)
+// Wolf in-memory store — data is pushed by OpenClaw every 60s
+// Vercel Edge Config/Blob not used — live pushes keep data fresh enough
 
-import { kv } from '@vercel/kv'
 import type {
   TradeUpdate,
   WolfStatusUpdate,
@@ -12,8 +11,6 @@ import type {
   PnlDataPoint,
   LearningUpdate
 } from './api-types'
-
-const KV_KEY = 'wolf:dashboard:state'
 
 interface WolfStore {
   trades: TradeUpdate[]
@@ -29,11 +26,12 @@ interface WolfStore {
 
 const defaultStore: WolfStore = {
   trades: [],
-  status: { status: 'hunting', message: 'Wolf is hunting...' },
+  status: { status: 'hunting', message: 'Wolf is live — waiting for first push...' },
   performance: { dailyPnl: 0, weeklyPnl: 0, monthlyPnl: 0, totalTrades: 0, winRate: 0, winStreak: 0, bestStreak: 0, totalProfit: 0 },
   marketData: [
     { symbol: 'BTC', price: 0, change: 0, changePercent: 0 },
     { symbol: 'ETH', price: 0, change: 0, changePercent: 0 },
+    { symbol: 'POLY', price: 0, change: 0, changePercent: 0 },
   ],
   activityLogs: [],
   ddubData: [],
@@ -42,105 +40,71 @@ const defaultStore: WolfStore = {
   lastUpdated: new Date().toISOString()
 }
 
-// In-memory fallback for local dev
 declare global { var wolfStore: WolfStore | undefined }
-let _mem: WolfStore = global.wolfStore ?? { ...defaultStore }
-if (process.env.NODE_ENV !== 'production') global.wolfStore = _mem
+export const store: WolfStore = global.wolfStore ?? { ...defaultStore }
+if (process.env.NODE_ENV !== 'production') global.wolfStore = store
 
-async function load(): Promise<WolfStore> {
-  try {
-    const saved = await kv.get<WolfStore>(KV_KEY)
-    if (saved) return saved
-  } catch { /* KV not configured — use memory */ }
-  return _mem
-}
-
-async function save(s: WolfStore): Promise<void> {
-  s.lastUpdated = new Date().toISOString()
-  _mem = s
-  if (process.env.NODE_ENV !== 'production') global.wolfStore = s
-  try {
-    await kv.set(KV_KEY, s)
-  } catch { /* KV not configured */ }
-}
-
-// --- Public API (all async now) ---
+function touch() { store.lastUpdated = new Date().toISOString() }
 
 export async function updateTrade(trade: TradeUpdate) {
-  const s = await load()
-  const idx = s.trades.findIndex(t => t.id === trade.id)
-  if (idx >= 0) s.trades[idx] = trade
-  else s.trades.unshift(trade)
-  if (s.trades.length > 100) s.trades = s.trades.slice(0, 100)
-  // Activity log
-  const action = trade.status === 'CLOSED' ? 'closed' : 'opened'
-  s.activityLogs.unshift({
+  const i = store.trades.findIndex(t => t.id === trade.id)
+  if (i >= 0) store.trades[i] = trade
+  else store.trades.unshift(trade)
+  if (store.trades.length > 100) store.trades = store.trades.slice(0, 100)
+  store.activityLogs.unshift({
     id: `log-${Date.now()}`,
     type: 'TRADE',
-    message: `${trade.side} ${trade.symbol} ${action} @ $${trade.entryPrice}${trade.pnl != null ? ` | P&L: $${Number(trade.pnl).toFixed(2)}` : ''}`,
+    message: `${trade.side} ${trade.symbol} ${trade.status === 'CLOSED' ? 'closed' : 'opened'} @ $${trade.entryPrice}${trade.pnl != null ? ` | P&L: $${Number(trade.pnl).toFixed(2)}` : ''}`,
     timestamp: new Date().toISOString(),
     priority: trade.status === 'CLOSED' ? (trade.pnl && trade.pnl > 0 ? 'high' : 'medium') : 'medium'
   })
-  if (s.activityLogs.length > 50) s.activityLogs = s.activityLogs.slice(0, 50)
-  await save(s)
+  if (store.activityLogs.length > 50) store.activityLogs = store.activityLogs.slice(0, 50)
+  touch()
 }
 
 export async function updateStatus(status: WolfStatusUpdate) {
-  const s = await load()
-  s.status = status
-  await save(s)
+  store.status = status; touch()
 }
 
 export async function updatePerformance(performance: PerformanceUpdate) {
-  const s = await load()
-  s.performance = { ...s.performance, ...performance }
-  await save(s)
+  store.performance = { ...store.performance, ...performance }; touch()
 }
 
 export async function updateMarketData(data: MarketDataUpdate) {
-  const s = await load()
-  const idx = s.marketData.findIndex(m => m.symbol === data.symbol)
-  if (idx >= 0) s.marketData[idx] = data
-  else s.marketData.push(data)
-  await save(s)
+  const i = store.marketData.findIndex(m => m.symbol === data.symbol)
+  if (i >= 0) store.marketData[i] = data
+  else store.marketData.push(data)
+  touch()
 }
 
 export async function addActivityLog(log: ActivityLogEntry) {
-  const s = await load()
-  s.activityLogs.unshift(log)
-  if (s.activityLogs.length > 50) s.activityLogs = s.activityLogs.slice(0, 50)
-  await save(s)
+  store.activityLogs.unshift(log)
+  if (store.activityLogs.length > 50) store.activityLogs = store.activityLogs.slice(0, 50)
+  touch()
 }
 
 export async function addDdubDataPoint(point: DdubDataPoint) {
-  const s = await load()
-  s.ddubData.push(point)
-  if (s.ddubData.length > 1440) s.ddubData = s.ddubData.slice(-1440)
-  await save(s)
+  store.ddubData.push(point)
+  if (store.ddubData.length > 1440) store.ddubData = store.ddubData.slice(-1440)
+  touch()
 }
 
 export async function addPnlDataPoint(point: PnlDataPoint) {
-  const s = await load()
-  const idx = s.pnlData.findIndex(p => p.date === point.date)
-  if (idx >= 0) s.pnlData[idx] = point
-  else s.pnlData.push(point)
-  if (s.pnlData.length > 30) s.pnlData = s.pnlData.slice(-30)
-  await save(s)
+  const i = store.pnlData.findIndex(p => p.date === point.date)
+  if (i >= 0) store.pnlData[i] = point
+  else store.pnlData.push(point)
+  if (store.pnlData.length > 30) store.pnlData = store.pnlData.slice(-30)
+  touch()
 }
 
 export async function updateLearning(learning: LearningUpdate) {
-  const s = await load()
-  s.learning = learning
-  await save(s)
+  store.learning = learning; touch()
 }
 
 export async function getFullState(): Promise<WolfStore> {
-  return load()
+  return store
 }
 
 export async function resetStore() {
-  await save({ ...defaultStore, lastUpdated: new Date().toISOString() })
+  Object.assign(store, { ...defaultStore, lastUpdated: new Date().toISOString() })
 }
-
-// Sync shim for legacy callers (not used in new routes)
-export const store: WolfStore = _mem

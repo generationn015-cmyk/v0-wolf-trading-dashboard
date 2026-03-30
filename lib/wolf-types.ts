@@ -5,6 +5,7 @@ export interface Trade {
   entry: number
   exit: number | null
   pnl: number
+  unrealizedPnl?: number
   status: 'OPEN' | 'CLOSED' | 'PENDING'
   timestamp: Date
   confidence: number
@@ -29,17 +30,17 @@ export interface MarketData {
   price: number
   change: number
   changePercent: number
-  volume: number
-  high: number
-  low: number
+  volume?: number
+  high?: number
+  low?: number
 }
 
 export interface ActivityLog {
   id: string
   type: 'TRADE' | 'ANALYSIS' | 'ALERT' | 'LEARNING' | 'SYSTEM'
   message: string
-  timestamp: Date
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  timestamp: string | Date
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | 'low' | 'medium' | 'high' | 'critical'
 }
 
 export interface PnLDataPoint {

@@ -31,8 +31,8 @@ export function MarketTicker({ data }: MarketTickerProps) {
               </span>
             </div>
             <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>H: ${market.high.toLocaleString()}</span>
-              <span>L: ${market.low.toLocaleString()}</span>
+              <span>H: ${(market.high ?? 0).toLocaleString()}</span>
+              <span>L: ${(market.low ?? 0).toLocaleString()}</span>
             </div>
           </CardContent>
         </Card>

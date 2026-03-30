@@ -128,19 +128,22 @@ export default function WolfMissionControl() {
   const activityLogs: ActivityLog[] = useApiData && apiState?.data?.activityLogs?.length > 0
     ? apiState.data.activityLogs.map((l: { id: string; type: string; message: string; timestamp: string; priority: string }) => ({
         id: l.id,
-        type: l.type,
+        type: (l.type || 'SYSTEM').toUpperCase() as ActivityLog['type'],
         message: l.message,
         timestamp: l.timestamp,
-        priority: l.priority
+        priority: (l.priority || 'medium').toUpperCase() as ActivityLog['priority'],
       }))
     : mockActivityLogs
 
   const marketData: MarketData[] = useApiData && apiState?.data?.marketData?.length > 0
-    ? apiState.data.marketData.map((m: { symbol: string; price: number; change: number; changePercent: number }) => ({
+    ? apiState.data.marketData.map((m: { symbol: string; price: number; change: number; changePercent: number; volume?: number; high?: number; low?: number }) => ({
         symbol: m.symbol,
-        price: m.price,
-        change: m.change,
-        changePercent: m.changePercent
+        price: m.price ?? 0,
+        change: m.change ?? 0,
+        changePercent: m.changePercent ?? 0,
+        volume: m.volume ?? 0,
+        high: m.high ?? m.price ?? 0,
+        low: m.low ?? m.price ?? 0,
       }))
     : mockMarketData
 

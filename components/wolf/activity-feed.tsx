@@ -91,7 +91,8 @@ export function ActivityFeed({ logs }: ActivityFeedProps) {
     }
   }
 
-  const formatTime = (date: Date) => {
+  const formatTime = (date: Date | string) => {
+    if (typeof date === 'string') { const d = new Date(date); if (!isNaN(d.getTime())) date = d; else return 'just now' }
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const minutes = Math.floor(diff / (1000 * 60))
