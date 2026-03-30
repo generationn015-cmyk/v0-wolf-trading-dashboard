@@ -6,6 +6,11 @@ const CLIP_MAP: Record<string, string> = {
   'poverty':      'https://www.myinstants.com/media/sounds/poverty.mp3',
   'show-goes-on': 'https://www.myinstants.com/media/sounds/the-show-goes-on.mp3',
   'pen':          'https://www.myinstants.com/media/sounds/pen.mp3',
+  // Unlock sounds — played on successful lock screen login
+  'unlock-buy':   'https://www.myinstants.com/media/sounds/buy.mp3',
+  'unlock-die':   'https://www.myinstants.com/media/sounds/die.mp3',
+  // Full "client buys or fucking die" speech from WoWS
+  'client-buy-die': 'https://www.myinstants.com/media/sounds/meu-filme_76.mp3',
 }
 
 export async function GET(
