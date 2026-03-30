@@ -14,6 +14,8 @@ import { TradesTable } from '@/components/wolf/trades-table'
 import { ActivityFeed } from '@/components/wolf/activity-feed'
 import { MarketTicker } from '@/components/wolf/market-ticker'
 import { LearningPanel } from '@/components/wolf/learning-panel'
+import { EvolutionPanel } from '@/components/wolf/evolution-panel'
+import { ConfigLock } from '@/components/wolf/config-lock'
 import { Achievements } from '@/components/wolf/achievements'
 import { StreakCounter } from '@/components/wolf/streak-counter'
 import { BelfortQuotes } from '@/components/wolf/belfort-quotes'
@@ -298,7 +300,7 @@ export default function WolfMissionControl() {
           {activeTab === 'dashboard' && (
             <div className="space-y-4 lg:space-y-6">
               {/* Market Ticker */}
-              <MarketTicker data={marketData} />
+              <MarketTicker data={marketData} trades={trades} />
 
               {/* Motivational Quote */}
               <BelfortQuotes />
@@ -390,15 +392,10 @@ export default function WolfMissionControl() {
 
           {activeTab === 'learning' && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-black text-foreground tracking-tight">🧠 EVOLUTION — Learning Engine</h2>
-                <p className="text-sm text-amber-400/80 italic">&quot;Adapt or die. Wolf adapts.&quot;</p>
-              </div>
-              <BelfortQuotes />
-              <div className="grid gap-6 lg:grid-cols-2">
-                <LearningPanel progress={wolfStatus.learningProgress} />
-                <ActivityFeed logs={activityLogs.filter(l => l.type === 'LEARNING')} />
-              </div>
+              <EvolutionPanel
+                progress={wolfStatus.learningProgress}
+                activityLogs={activityLogs}
+              />
             </div>
           )}
 
@@ -467,7 +464,6 @@ export default function WolfMissionControl() {
                 <h2 className="text-xl font-black text-foreground tracking-tight">⚡ AUTOPILOT — Strategy Engine</h2>
                 <p className="text-sm text-amber-400/80 italic">&quot;Value Bet · Copy Trading · Market Making — all running.&quot;</p>
               </div>
-              <BelfortQuotes />
               <div className="grid gap-6 lg:grid-cols-2">
                 <LearningPanel progress={wolfStatus.learningProgress} />
                 <ActivityFeed logs={activityLogs.filter(l => l.type === 'SYSTEM')} />
@@ -476,6 +472,7 @@ export default function WolfMissionControl() {
           )}
 
           {activeTab === 'settings' && (
+            <ConfigLock>
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-black text-foreground tracking-tight">⚙️ CONFIGURE — System Settings</h2>
@@ -571,6 +568,7 @@ export default function WolfMissionControl() {
                 winRate={wolfStatus.winRate}
               />
             </div>
+            </ConfigLock>
           )}
 
           {/* Footer with last refresh time */}

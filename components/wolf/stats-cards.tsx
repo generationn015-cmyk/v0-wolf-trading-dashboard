@@ -62,7 +62,7 @@ export function StatsCards({ wolfStatus }: StatsCardsProps) {
 
       {/* Daily P&L */}
       <Card
-        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
+        className="rounded-2xl bg-[#161624] border border-white/5 transition-all hover:border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('daily')}
         onMouseLeave={() => setHoveredCard(null)}
       >
@@ -84,7 +84,7 @@ export function StatsCards({ wolfStatus }: StatsCardsProps) {
 
       {/* Weekly P&L */}
       <Card
-        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
+        className="rounded-2xl bg-[#161624] border border-white/5 transition-all hover:border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('weekly')}
         onMouseLeave={() => setHoveredCard(null)}
       >
@@ -106,7 +106,7 @@ export function StatsCards({ wolfStatus }: StatsCardsProps) {
 
       {/* Monthly P&L */}
       <Card
-        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
+        className="rounded-2xl bg-[#161624] border border-white/5 transition-all hover:border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('monthly')}
         onMouseLeave={() => setHoveredCard(null)}
       >
@@ -128,7 +128,7 @@ export function StatsCards({ wolfStatus }: StatsCardsProps) {
 
       {/* Total Trades */}
       <Card
-        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
+        className="rounded-2xl bg-[#161624] border border-white/5 transition-all hover:border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('trades')}
         onMouseLeave={() => setHoveredCard(null)}
       >
@@ -172,7 +172,7 @@ export function StatsCards({ wolfStatus }: StatsCardsProps) {
 
       {/* Open Positions / Kill Switch */}
       <Card
-        className="bg-card border-border transition-all hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
+        className="rounded-2xl bg-[#161624] border border-white/5 transition-all hover:border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
         onMouseEnter={() => setHoveredCard('positions')}
         onMouseLeave={() => setHoveredCard(null)}
       >

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { TickerBanner } from '@/components/wolf/ticker-banner'
 import { Bell, Settings, RefreshCw, Wifi, WifiOff, Volume2, VolumeX, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,18 +22,8 @@ interface HeaderProps {
   onToggleSound?: () => void
 }
 
-const BELFORT_BANNER = [
-  "BUY OR FUCKING DIE",
-  "THE HUNT NEVER STOPS",
-  "BUY OR FUCKING DIE",
-  "MONEY NEVER SLEEPS",
-  "BUY OR FUCKING DIE",
-  "SELL ME THIS PEN",
-]
-
 export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = false, onToggleSound }: HeaderProps) {
   const [nyseTime, setNyseTime] = useState<string | null>(null)
-  const [bannerIdx, setBannerIdx] = useState(0)
   const [marketOpen, setMarketOpen] = useState(false)
 
   useEffect(() => {
@@ -50,10 +42,6 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    const interval = setInterval(() => setBannerIdx(i => (i + 1) % BELFORT_BANNER.length), 4000)
-    return () => clearInterval(interval)
-  }, [])
 
   const getStatusColor = (status: WolfStatus['status']) => {
     switch (status) {
@@ -77,24 +65,8 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
 
   return (
     <div className="flex flex-col border-b border-border">
-      {/* Top banner — Belfort ticker (desktop only) */}
-      <div className="hidden lg:block bg-amber-500/10 border-b border-amber-500/20 px-6 py-1 overflow-hidden">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <span className="text-amber-500 font-black text-[11px] tracking-[0.2em] shrink-0">🐺 STRATTON OAKMONT</span>
-            <span className="text-amber-500/40 text-[10px]">|</span>
-            <span className="text-amber-400 font-bold text-[11px] tracking-[0.15em] animate-pulse">
-              {BELFORT_BANNER[bannerIdx]}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className={`text-[10px] font-bold tracking-widest ${marketOpen ? 'text-emerald-400' : 'text-red-400'}`}>
-              {marketOpen ? '● MARKET OPEN' : '● MARKET CLOSED'}
-            </span>
-            <span className="text-[10px] text-muted-foreground">POLYMARKET • KALSHI • PAPER MODE</span>
-          </div>
-        </div>
-      </div>
+      {/* Scrolling ticker — always visible, full width */}
+      <TickerBanner />
 
       {/* Main header */}
       <header className="bg-card px-4 lg:px-6 py-2.5 lg:py-3">
@@ -102,8 +74,8 @@ export function Header({ wolfStatus, onRefresh, isConnected, soundEnabled = fals
           <div className="flex items-center gap-4">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="relative flex h-9 w-9 lg:h-12 lg:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30">
-                <span className="text-xl lg:text-3xl">🐺</span>
+              <div className="relative flex h-9 w-9 lg:h-12 lg:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 overflow-hidden">
+                <Image src="/wolf-logo.svg" alt="Wolf" width={48} height={48} className="w-full h-full object-cover" priority />
                 <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${getStatusColor(wolfStatus.status)} ${wolfStatus.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
               </div>
               <div className="hidden sm:block">
