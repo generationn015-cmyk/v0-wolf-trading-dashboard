@@ -36,12 +36,12 @@ export default function WolfMissionControl() {
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [useApiData, setUseApiData] = useState(false)
+  const [useApiData, setUseApiData] = useState(true)
   
   // Gamification state
-  const [winStreak, setWinStreak] = useState(7)
-  const [bestStreak, setBestStreak] = useState(12)
-  const [totalProfit, setTotalProfit] = useState(15623.80)
+  const [winStreak, setWinStreak] = useState(0)
+  const [bestStreak, setBestStreak] = useState(0)
+  const [totalProfit, setTotalProfit] = useState(0)
   
   // Mock data state (fallback) - initialize empty to avoid hydration mismatch
   const [mockPnlData, setMockPnlData] = useState<PnLDataPoint[]>([])
