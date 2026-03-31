@@ -170,26 +170,34 @@ export function StatsCards({ wolfStatus }: StatsCardsProps) {
         </CardContent>
       </Card>
 
-      {/* Open Positions / Kill Switch */}
+      {/* Balance — the money that matters */}
       <Card
-        className="rounded-2xl bg-[#161624] border border-white/5 transition-all hover:border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5 cursor-default"
-        onMouseEnter={() => setHoveredCard('positions')}
+        className={`rounded-2xl border transition-all hover:shadow-lg cursor-default ${
+          (wolfStatus.balance ?? 10000) >= 10000
+            ? 'bg-[#0d1a12] border-emerald-500/20 hover:border-emerald-500/40 hover:shadow-emerald-500/10'
+            : 'bg-[#1a0d0d] border-red-500/20 hover:border-red-500/40 hover:shadow-red-500/10'
+        }`}
+        onMouseEnter={() => setHoveredCard('balance')}
         onMouseLeave={() => setHoveredCard(null)}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Positions</span>
-            <Activity className={`h-4 w-4 ${wolfStatus.openPositions > 0 ? 'text-amber-400 animate-pulse' : 'text-muted-foreground'}`} />
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Balance</span>
+            <DollarSign className={`h-4 w-4 ${(wolfStatus.balance ?? 10000) >= 10000 ? 'text-emerald-400' : 'text-red-400'}`} />
           </div>
-          <p className="mt-2 text-xl font-black font-mono text-foreground">{wolfStatus.openPositions}</p>
+          <p className={`mt-2 text-xl font-black font-mono ${(wolfStatus.balance ?? 10000) >= 10000 ? 'text-emerald-300' : 'text-red-400'}`}>
+            ${(wolfStatus.balance ?? 10000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
           <div className="mt-2 flex items-center gap-1">
-            <Zap className={`h-3 w-3 ${getRiskColor(wolfStatus.riskLevel)}`} />
-            <span className={`text-[10px] font-bold ${getRiskColor(wolfStatus.riskLevel)}`}>
-              {wolfStatus.riskLevel} RISK
+            <Activity className={`h-3 w-3 ${wolfStatus.openPositions > 0 ? 'text-amber-400 animate-pulse' : 'text-muted-foreground'}`} />
+            <span className="text-[10px] text-muted-foreground">
+              {wolfStatus.openPositions} open · {wolfStatus.paperMode !== false ? 'PAPER' : 'LIVE'}
             </span>
           </div>
           <p className="mt-1 text-[10px] text-muted-foreground italic h-4">
-            {hoveredCard === 'positions' ? getRiskLabel(wolfStatus.riskLevel) : 'Kill switch: -40%'}
+            {hoveredCard === 'balance'
+              ? ((wolfStatus.balance ?? 10000) >= 10000 ? '💰 In the green' : '📉 Recalibrating...')
+              : `Started $10,000`}
           </p>
         </CardContent>
       </Card>
