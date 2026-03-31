@@ -52,6 +52,8 @@ function GuardianTab() {
     return `${Math.round(s / 3600)}h ago`
   }
 
+  const stale = g?.stale === true
+
   return (
     <div className="space-y-6">
       <div>
@@ -63,16 +65,16 @@ function GuardianTab() {
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-4 mb-4">
           <span className="text-4xl">
-            {isLoading ? '⏳' : !g ? '❓' : g.healthy && g.error_count === 0 ? '✅' : !g.healthy ? '🚨' : '⚠️'}
+            {isLoading ? '⏳' : stale ? '🔄' : !g ? '❓' : g.healthy && g.error_count === 0 ? '✅' : !g.healthy ? '🚨' : '⚠️'}
           </span>
           <div className="flex-1">
             <div className="text-lg font-black" style={{
-              color: isLoading ? '#556070' : !g ? '#556070' : g.healthy && g.error_count === 0 ? '#4ade80' : !g.healthy ? '#f87171' : '#fbbf24'
+              color: isLoading ? '#556070' : stale ? '#60a5fa' : !g ? '#556070' : g.healthy && g.error_count === 0 ? '#4ade80' : !g.healthy ? '#f87171' : '#fbbf24'
             }}>
-              {isLoading ? 'Loading…' : !g ? 'No data yet' : g.healthy && g.error_count === 0 ? 'CLEAN — No active issues' : !g.healthy ? `${g.error_count} CRITICAL/HIGH issue(s) detected` : `${g.error_count} warning(s) — no critical issues`}
+              {isLoading ? 'Loading…' : stale ? 'Reconnecting to Wolf — next push in ~60s' : !g ? 'No data yet' : g.healthy && g.error_count === 0 ? 'CLEAN — No active issues' : !g.healthy ? `${g.error_count} CRITICAL/HIGH issue(s) detected` : `${g.error_count} warning(s) — no critical issues`}
             </div>
             <div className="text-xs text-zinc-500 mt-1">
-              {g ? `Scan #${g.scan_count} · last scan ${ageLabel(g.last_scan_age_s)} · auto-refresh every 30s` : 'Waiting for first Guardian push from VPS…'}
+              {stale ? 'Server restarted — Guardian state will reload on next Wolf push' : g ? `Scan #${g.scan_count} · last scan ${ageLabel(g.last_scan_age_s)} · auto-refresh every 30s` : 'Waiting for first Guardian push from VPS…'}
             </div>
           </div>
           <button

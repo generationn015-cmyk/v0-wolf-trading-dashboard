@@ -15,6 +15,8 @@ export async function GET() {
 
     const now = Date.now() / 1000
     const age = g.last_scan_ts ? Math.round(now - g.last_scan_ts) : null
+    // stale = store was cold-started and has never received a guardian push
+    const stale = g.scan_count === 0 && g.last_scan_ts === null
 
     return NextResponse.json({
       success: true,
@@ -25,6 +27,7 @@ export async function GET() {
         errors: g.errors ?? [],
         last_scan_age_s: age,
         last_scan_ts: g.last_scan_ts,
+        stale,
       },
       timestamp: new Date().toISOString(),
     })
