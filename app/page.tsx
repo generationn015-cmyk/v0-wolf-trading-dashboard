@@ -89,7 +89,7 @@ export default function WolfMissionControl() {
         cumulative: p.cumulative,
         trades: p.trades
       }))
-    : mockPnlData
+    : (useApiData ? [] : mockPnlData)
 
   const ddubData = useApiData && apiState?.data?.ddubData?.length > 0
     ? apiState.data.ddubData.map((d: { time: string; value: number; signal: string }) => ({
@@ -98,7 +98,7 @@ export default function WolfMissionControl() {
         signal: d.signal,
         strength: Math.round((Math.abs(d.value - 50) / 25) * 100)
       }))
-    : mockDdubData
+    : (useApiData ? [] : mockDdubData)
 
   const trades: Trade[] = useApiData && apiState?.data?.trades?.length > 0
     ? apiState.data.trades.map((t: { id: string; symbol: string; side: string; entryPrice: number; exitPrice?: number; quantity: number; status: string; pnl?: number; pnlPercent?: number; entryTime: string | number; exitTime?: string | number; strategy?: string; confidence?: number; marketEnd?: number }) => ({
@@ -118,7 +118,7 @@ export default function WolfMissionControl() {
         size: t.quantity ?? undefined,
         marketEnd: t.marketEnd ?? 0,
       }))
-    : mockTrades
+    : (useApiData ? [] : mockTrades)
 
   const wolfStatus: WolfStatus = useApiData && apiState?.data?.status
     ? {
@@ -149,7 +149,7 @@ export default function WolfMissionControl() {
         timestamp: l.timestamp,
         priority: (l.priority || 'medium').toUpperCase() as ActivityLog['priority'],
       }))
-    : mockActivityLogs
+    : (useApiData ? [] : mockActivityLogs)
 
   const marketData: MarketData[] = useApiData && apiState?.data?.marketData?.length > 0
     ? apiState.data.marketData.map((m: { symbol: string; price: number; change: number; changePercent: number; volume?: number; high?: number; low?: number }) => ({

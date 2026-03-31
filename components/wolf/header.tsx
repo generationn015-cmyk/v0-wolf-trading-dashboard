@@ -87,13 +87,13 @@ export function Header({ wolfStatus, onRefresh, isConnected }: HeaderProps) {
             <div className="hidden sm:flex ml-2 items-center gap-2 rounded-full bg-secondary px-3 py-1">
               {isConnected ? (
                 <>
-                  <Wifi className="h-3 w-3 text-emerald-500" />
-                  <span className="text-xs text-emerald-500 font-medium">Live Feed</span>
+                  <Wifi className="h-3 w-3 text-emerald-500 animate-pulse" />
+                  <span className="text-xs text-emerald-500 font-bold tracking-wide">LIVE FEED</span>
                 </>
               ) : (
                 <>
                   <WifiOff className="h-3 w-3 text-red-500" />
-                  <span className="text-xs text-red-500">Offline</span>
+                  <span className="text-xs text-red-400 font-bold tracking-wide">WOLF OFFLINE</span>
                 </>
               )}
             </div>
