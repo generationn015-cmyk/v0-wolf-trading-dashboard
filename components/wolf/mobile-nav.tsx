@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutDashboard, Crosshair, BarChart3, History, Settings } from 'lucide-react'
+import { LayoutDashboard, Crosshair, BarChart3, ShieldCheck, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MobileNavProps {
@@ -9,11 +9,11 @@ interface MobileNavProps {
 }
 
 const items = [
-  { id: 'dashboard', label: 'Floor',  icon: LayoutDashboard },
-  { id: 'trades',    label: 'Hunts',  icon: Crosshair },
-  { id: 'analytics', label: 'Intel',  icon: BarChart3 },
-  { id: 'history',   label: 'Ledger', icon: History },
-  { id: 'settings',  label: 'Config', icon: Settings },
+  { id: 'dashboard', label: 'Floor',    icon: LayoutDashboard },
+  { id: 'trades',    label: 'Hunts',    icon: Crosshair },
+  { id: 'analytics', label: 'Intel',    icon: BarChart3 },
+  { id: 'guardian',  label: 'Guardian', icon: ShieldCheck },
+  { id: 'settings',  label: 'Config',   icon: Settings },
 ]
 
 export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {

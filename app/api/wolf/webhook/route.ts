@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { updateStatus, updatePerformance, updateMarketData, addDdubDataPoint, addActivityLog, updateLearning, addPnlDataPoint } from '@/lib/wolf-store'
+import { updateStatus, updatePerformance, updateMarketData, addDdubDataPoint, addActivityLog, updateLearning, addPnlDataPoint, updateGuardian } from '@/lib/wolf-store'
 
 export async function POST(request: NextRequest) {
   const apiKey = request.headers.get('x-wolf-api-key') || request.headers.get('authorization')?.replace('Bearer ', '')
@@ -20,6 +20,18 @@ export async function POST(request: NextRequest) {
       await updateLearning(learning)
       if (body.data?.pnlData) { for (const p of body.data.pnlData) await addPnlDataPoint(p) }
       await addActivityLog({ id: `log-${Date.now()}`, type: 'SYSTEM', message: `Received learning_update from OpenClaw`, timestamp: new Date().toISOString(), priority: 'low' })
+      return NextResponse.json({ success: true, data: { event, processed: true }, timestamp: new Date().toISOString() })
+    }
+
+    if (event === 'guardian_update') {
+      const g = body.data ?? {}
+      await updateGuardian({
+        scan_count: g.scan_count ?? 0,
+        healthy: g.healthy ?? true,
+        error_count: g.error_count ?? 0,
+        errors: g.errors ?? [],
+        last_scan_ts: g.last_scan_ts ?? (Date.now() / 1000),
+      })
       return NextResponse.json({ success: true, data: { event, processed: true }, timestamp: new Date().toISOString() })
     }
 

@@ -12,6 +12,14 @@ import type {
   LearningUpdate
 } from './api-types'
 
+interface GuardianState {
+  scan_count: number
+  healthy: boolean
+  error_count: number
+  errors: Array<{ name: string; severity: string; description: string; sample?: string }>
+  last_scan_ts: number | null
+}
+
 interface WolfStore {
   trades: TradeUpdate[]
   status: WolfStatusUpdate
@@ -21,6 +29,7 @@ interface WolfStore {
   ddubData: DdubDataPoint[]
   pnlData: PnlDataPoint[]
   learning: LearningUpdate
+  guardian: GuardianState
   lastUpdated: string
 }
 
@@ -37,6 +46,7 @@ const defaultStore: WolfStore = {
   ddubData: [],
   pnlData: [],
   learning: { progress: 0, modulesCompleted: 0, totalModules: 5, currentModule: 'Paper trading active', accuracy: 0, lessonsLearned: [] },
+  guardian: { scan_count: 0, healthy: true, error_count: 0, errors: [], last_scan_ts: null },
   lastUpdated: new Date().toISOString()
 }
 
@@ -99,6 +109,10 @@ export async function addPnlDataPoint(point: PnlDataPoint) {
 
 export async function updateLearning(learning: LearningUpdate) {
   store.learning = learning; touch()
+}
+
+export async function updateGuardian(guardian: GuardianState) {
+  store.guardian = guardian; touch()
 }
 
 export async function getFullState(): Promise<WolfStore> {

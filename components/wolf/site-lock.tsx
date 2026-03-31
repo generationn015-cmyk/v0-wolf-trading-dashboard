@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
-const HASH_KEY    = 'wolf_site_hash'
-const SESSION_KEY = 'wolf_site_unlocked'
+const SESSION_KEY = 'wolf_auth_ok'  // sessionStorage flag only — actual auth is server-side
 
 const QUOTES = [
   { text: "The only thing standing between you and your goal is the story you keep telling yourself.", attr: "Jordan Belfort" },
@@ -41,34 +40,39 @@ const CSS = `
 .wl-ticker{animation:wlTicker 20s linear infinite}
 `
 
-async function hashPw(pw: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw + 'wolf-stratton-v3'))
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
 interface SiteLockProps { children: React.ReactNode }
 
 export function SiteLock({ children }: SiteLockProps) {
-  const [state, setState]         = useState<'loading' | 'set' | 'enter' | 'unlocked'>('loading')
+  const [state, setState]         = useState<'loading' | 'enter' | 'unlocked'>('loading')
   const [pw, setPw]               = useState('')
-  const [pw2, setPw2]             = useState('')
   const [showPw, setShowPw]       = useState(false)
   const [error, setError]         = useState('')
   const [shaking, setShaking]     = useState(false)
   const [quoteIdx, setQuoteIdx]   = useState(0)
   const [quoteFade, setQuoteFade] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
+  // On mount — check server-side session validity
   useEffect(() => {
     if (typeof document === 'undefined') return
     if (!document.getElementById('wl-css')) {
       const s = document.createElement('style'); s.id = 'wl-css'; s.textContent = CSS
       document.head.appendChild(s)
     }
-    const stored  = localStorage.getItem(HASH_KEY)
-    const session = sessionStorage.getItem(SESSION_KEY)
-    if (!stored)            { setState('set');      return }
-    if (session === 'true') { setState('unlocked'); return }
-    setState('enter')
+    // Quick session check — hits /api/wolf/auth GET
+    fetch('/api/wolf/auth', { credentials: 'same-origin' })
+      .then(r => r.json())
+      .then(d => {
+        if (!d.configured) {
+          // No password set on server — open access
+          setState('unlocked')
+        } else if (d.authenticated) {
+          setState('unlocked')
+        } else {
+          setState('enter')
+        }
+      })
+      .catch(() => setState('enter'))
   }, [])
 
   // Rotate quote every 7 seconds
@@ -83,34 +87,39 @@ export function SiteLock({ children }: SiteLockProps) {
 
   const shake = () => { setShaking(true); setTimeout(() => setShaking(false), 600) }
 
-  // Play unlock sound — called inside the button onClick so it has user-gesture context
   const playUnlockSound = useCallback(() => {
     try {
       const audio = new Audio('/sounds/not-leaving.mp3')
       audio.volume = 0.85
-      audio.play().catch(() => {/* silently ignore autoplay blocks */})
+      audio.play().catch(() => {})
     } catch { /* ignore */ }
   }, [])
 
-  const handleSet = useCallback(async () => {
-    if (pw.length < 4) { setError('At least 4 characters'); shake(); return }
-    if (pw !== pw2)    { setError('Passwords do not match'); shake(); return }
-    localStorage.setItem(HASH_KEY, await hashPw(pw))
-    sessionStorage.setItem(SESSION_KEY, 'true')
-    playUnlockSound()           // ← inside user gesture ✓
-    setState('unlocked')
-  }, [pw, pw2, playUnlockSound])
-
   const handleEnter = useCallback(async () => {
-    const stored = localStorage.getItem(HASH_KEY)
-    if (!stored) { setState('set'); return }
-    if (await hashPw(pw) === stored) {
-      sessionStorage.setItem(SESSION_KEY, 'true')
-      setPw('')
-      playUnlockSound()         // ← inside user gesture ✓
-      setState('unlocked')
-    } else {
-      setError('Access denied'); setPw(''); shake()
+    if (!pw.trim()) { setError('Enter access code'); shake(); return }
+    setSubmitting(true)
+    setError('')
+    try {
+      const r = await fetch('/api/wolf/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ password: pw.trim() }),
+      })
+      const d = await r.json()
+      if (d.ok) {
+        playUnlockSound()
+        setState('unlocked')
+      } else {
+        setError('Access denied')
+        setPw('')
+        shake()
+      }
+    } catch {
+      setError('Connection error')
+      shake()
+    } finally {
+      setSubmitting(false)
     }
   }, [pw, playUnlockSound])
 
@@ -129,7 +138,7 @@ export function SiteLock({ children }: SiteLockProps) {
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse 55% 45% at 50% 54%, rgba(245,158,11,0.06) 0%, transparent 70%)' }} />
 
-      {/* ── Ticker — top bar, same quotes as floor ── */}
+      {/* Ticker — top bar */}
       <div className="relative z-10 w-full bg-black/80 border-b border-amber-500/20 h-7 flex items-center overflow-hidden shrink-0">
         <div className="wl-ticker whitespace-nowrap flex items-center gap-10 text-[10px] font-mono font-bold tracking-[0.15em] text-amber-500/75 px-4">
           {[...TICKER_ITEMS, ...TICKER_ITEMS].map((t, i) => (
@@ -138,17 +147,15 @@ export function SiteLock({ children }: SiteLockProps) {
         </div>
       </div>
 
-      {/* ── Main centered content ── */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 wl-fadein overflow-y-auto py-8">
 
-        {/* Wolf — same component used throughout the platform */}
         <div className="mb-5">
           <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 shadow-lg shadow-amber-500/10">
             <span className="text-7xl">🐺</span>
           </div>
         </div>
 
-        {/* Title */}
         <div className="text-center mb-1">
           <h1 className="text-3xl font-black text-white tracking-tight leading-none">
             WOLF <span className="text-amber-500">OF ALL STREETS</span>
@@ -175,16 +182,12 @@ export function SiteLock({ children }: SiteLockProps) {
             <input
               type={showPw ? 'text' : 'password'}
               value={pw}
+              disabled={submitting}
               onChange={e => { setPw(e.target.value); setError('') }}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  if (state === 'set') { if (pw2) handleSet() }
-                  else handleEnter()
-                }
-              }}
-              placeholder={state === 'set' ? 'Create access code' : 'Access code'}
+              onKeyDown={e => { if (e.key === 'Enter') handleEnter() }}
+              placeholder="Access code"
               autoFocus
-              className="w-full rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-500/50 focus:bg-white/[0.07] transition-all pr-12"
+              className="w-full rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-500/50 focus:bg-white/[0.07] transition-all pr-12 disabled:opacity-60"
             />
             <button
               onClick={() => setShowPw(v => !v)}
@@ -194,29 +197,19 @@ export function SiteLock({ children }: SiteLockProps) {
             </button>
           </div>
 
-          {state === 'set' && (
-            <input
-              type={showPw ? 'text' : 'password'}
-              value={pw2}
-              onChange={e => { setPw2(e.target.value); setError('') }}
-              onKeyDown={e => e.key === 'Enter' && handleSet()}
-              placeholder="Confirm access code"
-              className="w-full rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-500/50 transition-all"
-            />
-          )}
-
           {error && <p className="text-xs text-red-400 font-bold text-center tracking-wide">{error}</p>}
 
           <button
-            onClick={state === 'set' ? handleSet : handleEnter}
-            className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.98] transition-all py-3.5 text-sm font-black text-black tracking-[0.18em] uppercase shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40"
+            onClick={handleEnter}
+            disabled={submitting}
+            className="w-full rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.98] disabled:opacity-60 transition-all py-3.5 text-sm font-black text-black tracking-[0.18em] uppercase shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40"
           >
-            {state === 'set' ? 'SECURE THE TERMINAL' : 'ENTER THE FLOOR'}
+            {submitting ? 'CHECKING…' : 'ENTER THE FLOOR'}
           </button>
         </div>
       </div>
 
-      {/* ── Bottom footer ── */}
+      {/* Bottom footer */}
       <div className="relative z-10 w-full border-t border-white/5 bg-black/50 px-6 py-2 flex items-center justify-between shrink-0">
         <span className="text-[9px] text-zinc-700 tracking-[0.3em] uppercase font-bold">Stratton Oakmont Inc.</span>
         <span className="text-[9px] text-zinc-700 tracking-[0.2em] uppercase">Authorized Access Only</span>
@@ -226,9 +219,9 @@ export function SiteLock({ children }: SiteLockProps) {
   )
 }
 
-export function resetSiteLock() {
+// Called from Config tab — server logs out the cookie
+export async function resetSiteLock() {
   if (typeof window === 'undefined') return
-  localStorage.removeItem(HASH_KEY)
-  sessionStorage.removeItem(SESSION_KEY)
+  await fetch('/api/wolf/auth', { method: 'DELETE', credentials: 'same-origin' }).catch(() => {})
   window.location.reload()
 }

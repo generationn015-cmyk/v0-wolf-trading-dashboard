@@ -36,6 +36,84 @@ import type { PnLDataPoint, DdubIndexData, Trade, WolfStatus, ActivityLog, Marke
 // API fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
+// ── Guardian Tab ─────────────────────────────────────────────────────────────
+function GuardianTab() {
+  const { data, mutate, isLoading } = useSWR('/api/wolf/guardian', fetcher, { refreshInterval: 30000 })
+  const g = data?.data
+
+  const sevColor: Record<string, string> = {
+    CRITICAL: '#f87171', HIGH: '#f87171', MEDIUM: '#fbbf24', LOW: '#94a3b8'
+  }
+
+  const ageLabel = (s: number | null) => {
+    if (s === null) return 'never'
+    if (s < 60) return `${s}s ago`
+    if (s < 3600) return `${Math.round(s / 60)}m ago`
+    return `${Math.round(s / 3600)}h ago`
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-black text-foreground tracking-tight">🛡️ GUARDIAN — Error Monitor</h2>
+        <p className="text-sm text-amber-400/80 italic">&quot;Scanning every 5 minutes. Every issue caught before it costs money.&quot;</p>
+      </div>
+
+      {/* Status card */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center gap-4 mb-4">
+          <span className="text-4xl">
+            {isLoading ? '⏳' : !g ? '❓' : g.healthy && g.error_count === 0 ? '✅' : !g.healthy ? '🚨' : '⚠️'}
+          </span>
+          <div className="flex-1">
+            <div className="text-lg font-black" style={{
+              color: isLoading ? '#556070' : !g ? '#556070' : g.healthy && g.error_count === 0 ? '#4ade80' : !g.healthy ? '#f87171' : '#fbbf24'
+            }}>
+              {isLoading ? 'Loading…' : !g ? 'No data yet' : g.healthy && g.error_count === 0 ? 'CLEAN — No active issues' : !g.healthy ? `${g.error_count} CRITICAL/HIGH issue(s) detected` : `${g.error_count} warning(s) — no critical issues`}
+            </div>
+            <div className="text-xs text-zinc-500 mt-1">
+              {g ? `Scan #${g.scan_count} · last scan ${ageLabel(g.last_scan_age_s)} · auto-refresh every 30s` : 'Waiting for first Guardian push from VPS…'}
+            </div>
+          </div>
+          <button
+            onClick={() => mutate()}
+            className="rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-4 py-2 text-xs text-blue-400 font-bold transition-colors"
+          >
+            ↻ Refresh
+          </button>
+        </div>
+
+        {/* Issues list */}
+        {g?.errors && g.errors.length > 0 ? (
+          <div className="space-y-2 mt-4">
+            {g.errors.map((e: any, i: number) => (
+              <div key={i} className="rounded-lg bg-zinc-900 border-l-4 p-3" style={{ borderLeftColor: sevColor[e.severity] ?? '#556070' }}>
+                <div className="text-sm font-bold" style={{ color: sevColor[e.severity] ?? '#556070' }}>
+                  [{e.severity}] {e.name}
+                </div>
+                <div className="text-xs text-zinc-400 mt-1">{e.description}</div>
+                {e.sample && <div className="text-xs text-zinc-600 font-mono mt-1 truncate">{e.sample}</div>}
+              </div>
+            ))}
+          </div>
+        ) : g && (
+          <div className="text-sm text-emerald-600/70 mt-2">No active issues. Wolf is running clean.</div>
+        )}
+      </div>
+
+      {/* Info card */}
+      <div className="rounded-xl border border-border bg-card p-5 text-sm text-zinc-500 space-y-2">
+        <div className="font-bold text-zinc-400">How Guardian works</div>
+        <div>• Runs inside Wolf on the VPS — scans the live log every 5 minutes</div>
+        <div>• Checks DB integrity: win rates, void trades, duplicate entries</div>
+        <div>• Auto-fixes what it can (slug cache reload, DB retries)</div>
+        <div>• Pushes status here via webhook every scan</div>
+        <div>• Only alerts on issues <strong>from this boot forward</strong> — no false positives from old logs</div>
+      </div>
+    </div>
+  )
+}
+
 export default function WolfMissionControl() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isConnected, setIsConnected] = useState(true)
@@ -486,6 +564,10 @@ export default function WolfMissionControl() {
               </div>
               <StatsCards wolfStatus={wolfStatus} />
             </div>
+          )}
+
+          {activeTab === 'guardian' && (
+            <GuardianTab />
           )}
 
           {activeTab === 'automation' && (

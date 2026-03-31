@@ -10,7 +10,8 @@ import {
   Shield,
   Zap,
   Building2,
-  Crosshair
+  Crosshair,
+  ShieldCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,6 +28,7 @@ const navItems = [
   { id: 'history', label: 'Ledger', icon: History, subtitle: 'Closed Trades' },
   { id: 'risk', label: 'Risk Desk', icon: Shield, subtitle: 'Kill Switch' },
   { id: 'automation', label: 'Autopilot', icon: Zap, subtitle: 'Strategies' },
+  { id: 'guardian', label: 'Guardian', icon: ShieldCheck, subtitle: 'Error Monitor' },
   { id: 'settings', label: 'Configure', icon: Settings, subtitle: 'Data & Settings' },
 ]
 
