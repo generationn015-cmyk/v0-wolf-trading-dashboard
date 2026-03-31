@@ -101,7 +101,7 @@ export default function WolfMissionControl() {
     : mockDdubData
 
   const trades: Trade[] = useApiData && apiState?.data?.trades?.length > 0
-    ? apiState.data.trades.map((t: { id: string; symbol: string; side: string; entryPrice: number; exitPrice?: number; quantity: number; status: string; pnl?: number; pnlPercent?: number; entryTime: string | number; exitTime?: string | number; strategy?: string; confidence?: number }) => ({
+    ? apiState.data.trades.map((t: { id: string; symbol: string; side: string; entryPrice: number; exitPrice?: number; quantity: number; status: string; pnl?: number; pnlPercent?: number; entryTime: string | number; exitTime?: string | number; strategy?: string; confidence?: number; marketEnd?: number }) => ({
         id: t.id,
         symbol: t.symbol,
         // Normalize side: YES→LONG, NO→SHORT, LONG/SHORT pass through
@@ -116,6 +116,7 @@ export default function WolfMissionControl() {
         confidence: t.confidence ?? 0.75,
         strategy: t.strategy ?? 'unknown',
         size: t.quantity ?? undefined,
+        marketEnd: t.marketEnd ?? 0,
       }))
     : mockTrades
 

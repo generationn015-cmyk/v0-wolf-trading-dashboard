@@ -11,6 +11,7 @@ export interface Trade {
   confidence: number
   strategy: string
   size?: number  // USD position size (stake)
+  marketEnd?: number  // ms timestamp of market expiry (0 = unknown)
 }
 
 export interface WolfStatus {

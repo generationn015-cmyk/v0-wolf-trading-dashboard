@@ -21,6 +21,8 @@ export interface TradeUpdate {
   exitTime?: string
   strategy?: string
   notes?: string
+  marketEnd?: number   // ms timestamp of market expiry (0 = unknown)
+  confidence?: number
 }
 
 export interface WolfStatusUpdate {
