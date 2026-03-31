@@ -156,7 +156,7 @@ export default function WolfMissionControl() {
   const { data: apiState, mutate: refreshApiState } = useSWR(
     useApiData ? '/api/wolf/state' : null,
     fetcher,
-    { refreshInterval: 2000 }
+    { refreshInterval: 15000 }
   )
 
   // Derived state from API or mock data
@@ -205,8 +205,8 @@ export default function WolfMissionControl() {
                  : ['learning'].includes(apiState.data.status.status) ? 'LEARNING'
                  : ['error','crash'].includes(apiState.data.status.status) ? 'ERROR'
                  : 'IDLE') as 'ACTIVE' | 'IDLE' | 'LEARNING' | 'ERROR',
-        winRate: apiState.data.performance?.winRate ?? 0,
-        totalTrades: apiState.data.performance?.totalTrades ?? 0,
+        winRate: apiState.data.performance?.winRate > 0 ? apiState.data.performance.winRate : (wolfStatus?.winRate ?? 0),
+        totalTrades: apiState.data.performance?.totalTrades > 0 ? apiState.data.performance.totalTrades : (wolfStatus?.totalTrades ?? 0),
         dailyPnL: apiState.data.performance?.dailyPnl ?? 0,
         weeklyPnL: apiState.data.performance?.weeklyPnl ?? 0,
         monthlyPnL: apiState.data.performance?.monthlyPnl ?? 0,
@@ -245,9 +245,10 @@ export default function WolfMissionControl() {
   useEffect(() => {
     if (useApiData && apiState?.data?.performance) {
       const perf = apiState.data.performance
-      setWinStreak(perf.winStreak ?? winStreak)
-      setBestStreak(perf.bestStreak ?? bestStreak)
-      setTotalProfit(perf.totalProfit ?? totalProfit)
+      // Only update if new value is non-zero to prevent cold-start store from zeroing display
+      if (perf.winStreak > 0 || perf.bestStreak > 0) setWinStreak(perf.winStreak ?? winStreak)
+      if (perf.bestStreak > 0) setBestStreak(perf.bestStreak ?? bestStreak)
+      if ((perf.totalProfit ?? 0) !== 0) setTotalProfit(perf.totalProfit ?? totalProfit)
     }
   }, [apiState, useApiData, winStreak, bestStreak, totalProfit])
 

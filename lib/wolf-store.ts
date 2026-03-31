@@ -115,8 +115,10 @@ export async function updateGuardian(guardian: GuardianState) {
   store.guardian = guardian; touch()
 }
 
-export async function getFullState(): Promise<WolfStore> {
-  return store
+export async function getFullState(): Promise<WolfStore & { isStale: boolean }> {
+  // isStale = store is at default values (never received a push from Wolf since cold start)
+  const isStale = store.performance.totalTrades === 0 && store.trades.length === 0 && store.pnlData.length === 0
+  return { ...store, isStale }
 }
 
 export async function resetStore() {
