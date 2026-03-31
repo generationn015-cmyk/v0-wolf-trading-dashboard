@@ -34,31 +34,31 @@ interface Sound { id: string; label: string; emoji: string; clip?: string; synth
 const SOUNDS: Sound[] = [
   {
     id: 'not-leaving', label: "I'M NOT LEAVING", emoji: '🚫',
-    clip: 'not-leaving',               // im-not-leaving.mp3 — 160KB confirmed ✅
+    clip: '/sounds/not-leaving.mp3',
     synth: () => { tone(55, 'sine', 0.4, 0, 0.6, 28); tone(200, 'sawtooth', 0.08, 0.4, 0.9, 600); tone(1100, 'sine', 0.12, 0.8, 0.6) },
     synthDur: 2000, color: 'amber',
   },
   {
     id: 'sell-pen', label: 'SELL ME THIS PEN', emoji: '🖊️',
-    clip: 'pen',                       // pen.mp3 — 262KB confirmed ✅
+    clip: '/sounds/pen.mp3',
     synth: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, 'sine', 0.18, i * 0.13, 0.6)) },
     synthDur: 1800, color: 'emerald',
   },
   {
     id: 'poverty', label: 'NO NOBILITY IN POVERTY', emoji: '👑',
-    clip: 'poverty',                   // poverty.mp3 — 68KB confirmed ✅
+    clip: '/sounds/poverty.mp3',
     synth: () => { tone(220, 'sine', 0.15, 0, 0.8); tone(330, 'sine', 0.1, 0.4, 0.6) },
     synthDur: 1500, color: 'yellow',
   },
   {
     id: 'show-goes-on', label: 'THE SHOW GOES ON', emoji: '🎭',
-    clip: 'show-goes-on',              // the-show-goes-on.mp3 — 197KB confirmed ✅
+    clip: '/sounds/show-goes-on.mp3',
     synth: () => { [330, 440, 550, 660].forEach((f, i) => tone(f, 'triangle', 0.12, i * 0.15, 0.6)) },
     synthDur: 1800, color: 'purple',
   },
   {
     id: 'not-leaving2', label: 'SHOW GOES ON (ALT)', emoji: '🔁',
-    clip: 'not-leaving2',              // not-leaving.mp3 — 117KB (shorter cut) ✅
+    clip: '/sounds/not-leaving.mp3',              // not-leaving.mp3 — 117KB (shorter cut) ✅
     synth: () => { tone(110, 'sawtooth', 0.12, 0, 0.4); tone(220, 'sawtooth', 0.08, 0.3, 0.6); tone(440, 'sine', 0.12, 0.6, 0.7) },
     synthDur: 1800, color: 'blue',
   },
@@ -117,7 +117,7 @@ export function BelfortSoundboard() {
     getCtx() // unlock on user gesture
 
     if (sound.clip) {
-      const audio = new Audio(`/api/wolf/audio/${sound.clip}`)
+      const audio = new Audio(sound.clip.startsWith('/') ? sound.clip : `/api/wolf/audio/${sound.clip}`)
       audio.volume = 0.9
       audioRef.current = audio
 

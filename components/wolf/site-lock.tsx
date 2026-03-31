@@ -87,8 +87,8 @@ export function SiteLock({ children }: SiteLockProps) {
   // Play unlock sound — called inside the button onClick so it has user-gesture context
   const playUnlockSound = useCallback(() => {
     try {
-      const clip  = Math.random() < 0.5 ? 'unlock-buy' : 'unlock-die'
-      const audio = new Audio(`/api/wolf/audio/${clip}`)
+      const clip  = Math.random() < 0.5 ? '/sounds/buy.mp3' : '/sounds/die.mp3'
+      const audio = new Audio(clip)
       audio.volume = 0.85
       audio.play().catch(() => {/* silently ignore autoplay blocks */})
     } catch { /* ignore */ }
