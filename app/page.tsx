@@ -592,6 +592,46 @@ export default function WolfMissionControl() {
                   </button>
                 </div>
               </div>
+              {/* Roadmap / Queued Expansions */}
+              <div className="rounded-lg border border-border bg-card p-6">
+                <h3 className="font-bold text-foreground mb-1">📍 Expansion Roadmap</h3>
+                <p className="text-xs text-muted-foreground mb-4">Queued builds — unlocks after Polymarket live baseline is proven</p>
+                <div className="space-y-3">
+                  {/* Phase 1 — Current */}
+                  <div className="flex items-start gap-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                    <span className="mt-0.5 h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-emerald-400">Phase 1 — Polymarket Live <span className="ml-2 text-[10px] font-normal bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full">ACTIVE · April 1</span></p>
+                      <p className="text-xs text-muted-foreground mt-0.5">8 strategies · $100 USDC · 72% WR gate · paper → live flip</p>
+                    </div>
+                  </div>
+                  {/* Phase 2 — Hyperliquid */}
+                  <div className="flex items-start gap-3 rounded-lg bg-secondary/50 border border-border p-3">
+                    <span className="mt-0.5 h-2 w-2 rounded-full bg-zinc-500 shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-foreground">Phase 2 — Hyperliquid Perps <span className="ml-2 text-[10px] font-normal bg-zinc-700 text-zinc-400 px-2 py-0.5 rounded-full">QUEUED</span></p>
+                        <span className="text-[10px] text-muted-foreground">~2 weeks post-live</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">TA Signal + Latency Arb on BTC/ETH perps · 3x max leverage · isolated margin · separate risk engine</p>
+                      <div className="mt-2 flex gap-2 flex-wrap">
+                        <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">TA Signal</span>
+                        <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">Latency Arb</span>
+                        <span className="text-[10px] bg-zinc-700/50 text-zinc-400 px-2 py-0.5 rounded-full">Account: secured ✅</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Phase 3 — placeholder */}
+                  <div className="flex items-start gap-3 rounded-lg bg-secondary/30 border border-border/50 p-3 opacity-50">
+                    <span className="mt-0.5 h-2 w-2 rounded-full bg-zinc-600 shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-zinc-500">Phase 3 — Cross-Venue Arb <span className="ml-2 text-[10px] font-normal bg-zinc-800 text-zinc-600 px-2 py-0.5 rounded-full">FUTURE</span></p>
+                      <p className="text-xs text-zinc-600 mt-0.5">Polymarket ↔ Hyperliquid unified position management · auto capital allocation</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <Achievements 
                 winStreak={winStreak}
                 totalProfit={totalProfit}
