@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { WolfAnimation } from '@/components/wolf/wolf-animation'
 
 const HASH_KEY    = 'wolf_site_hash'
 const SESSION_KEY = 'wolf_site_unlocked'
@@ -144,7 +143,9 @@ export function SiteLock({ children }: SiteLockProps) {
 
         {/* Wolf — same component used throughout the platform */}
         <div className="mb-5">
-          <WolfAnimation size={120} />
+          <div className="flex h-28 w-28 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+            <span className="text-7xl">🐺</span>
+          </div>
         </div>
 
         {/* Title */}
