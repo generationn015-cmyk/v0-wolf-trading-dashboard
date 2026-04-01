@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { ArrowUpRight, ArrowDownRight, Activity, TrendingUp, Clock, ChevronRight, Zap, Target, DollarSign, Brain } from 'lucide-react'
 import type { WolfStatus, Trade, ActivityLog, MarketData } from '@/lib/wolf-types'
 
@@ -436,6 +437,61 @@ function MobileConfig() {
   )
 }
 
+// ─── Mobile Guardian ─────────────────────────────────────────────────────────
+function MobileGuardian() {
+  const [data, setData] = React.useState<{scan_count:number,healthy:boolean,error_count:number,errors:Array<{name:string,severity:string,description:string}>,last_scan_age_s:number|null}|null>(null)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    fetch('/api/wolf/guardian')
+      .then(r => r.json())
+      .then(d => { setData(d.data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const ageLabel = (s: number | null) => {
+    if (s === null) return 'never'
+    if (s < 60) return `${s}s ago`
+    if (s < 3600) return `${Math.round(s/60)}m ago`
+    return `${Math.round(s/3600)}h ago`
+  }
+
+  return (
+    <div className="space-y-3">
+      <MCard className={`border ${!data ? 'border-zinc-700' : data.healthy && data.error_count === 0 ? 'border-emerald-500/30' : !data.healthy ? 'border-red-500/40' : 'border-amber-500/30'}`}>
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{loading ? '⏳' : !data ? '❓' : data.healthy && data.error_count === 0 ? '✅' : !data.healthy ? '🚨' : '⚠️'}</span>
+          <div className="flex-1">
+            <p className="text-sm font-black text-white">
+              {loading ? 'Loading…' : !data ? 'No data' : data.healthy && data.error_count === 0 ? 'CLEAN — Wolf running healthy' : `${data.error_count} issue(s) detected`}
+            </p>
+            <p className="text-[10px] text-zinc-500 mt-0.5">
+              {data ? `Scan #${data.scan_count} · ${ageLabel(data.last_scan_age_s)}` : 'Waiting for Guardian push…'}
+            </p>
+          </div>
+        </div>
+      </MCard>
+
+      {data?.errors && data.errors.length > 0 && data.errors.map((e, i) => (
+        <MCard key={i} className={`border-l-4 ${e.severity === 'CRITICAL' || e.severity === 'HIGH' ? 'border-l-red-500' : 'border-l-amber-500'}`}>
+          <p className="text-xs font-bold text-red-400">[{e.severity}] {e.name}</p>
+          <p className="text-[10px] text-zinc-500 mt-1">{e.description}</p>
+        </MCard>
+      ))}
+
+      <MCard>
+        <MLabel>Guardian Status</MLabel>
+        <div className="space-y-1 mt-2 text-[10px] text-zinc-500">
+          <p>Scans wolf.log every 5 minutes</p>
+          <p>Checks DB integrity each scan</p>
+          <p>Auto-fixes slug cache + DB retries</p>
+          <p>Pushes results to this dashboard</p>
+        </div>
+      </MCard>
+    </div>
+  )
+}
+
 // ─── Root export ─────────────────────────────────────────────────────────────
 export function MobileDashboard({ wolfStatus, trades, activityLogs, marketData, activeTab, onTabChange }: MobileDashboardProps) {
   const tabTitles: Record<string, { title: string; sub: string }> = {
@@ -443,6 +499,7 @@ export function MobileDashboard({ wolfStatus, trades, activityLogs, marketData, 
     trades:    { title: 'Hunt Log', sub: 'Active Positions' },
     analytics: { title: 'Intel', sub: 'Performance & Risk' },
     history:   { title: 'Ledger', sub: 'Closed Trades' },
+    guardian:  { title: 'Guardian', sub: 'Error Monitor' },
     settings:  { title: 'Configure', sub: 'System Settings' },
   }
   const { title, sub } = tabTitles[activeTab] ?? { title: 'Wolf', sub: '' }
@@ -463,6 +520,7 @@ export function MobileDashboard({ wolfStatus, trades, activityLogs, marketData, 
         {activeTab === 'trades' && <MobileHunts trades={trades} />}
         {activeTab === 'analytics' && <MobileIntel wolfStatus={wolfStatus} />}
         {activeTab === 'history' && <MobileLedger trades={trades} wolfStatus={wolfStatus} />}
+        {activeTab === 'guardian' && <MobileGuardian />}
         {activeTab === 'settings' && <MobileConfig />}
       </div>
     </div>

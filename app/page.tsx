@@ -148,7 +148,7 @@ export default function WolfMissionControl() {
     lastActivity: null,
     openPositions: 0,
     riskLevel: 'MEDIUM',
-    balance: 10000,
+    balance: 100,
     paperMode: true,
   })
   const [mockActivityLogs, setMockActivityLogs] = useState<ActivityLog[]>([])
@@ -550,7 +550,7 @@ export default function WolfMissionControl() {
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-3">Position Sizing</p>
                   <p className="text-2xl font-black text-amber-400">$200</p>
                   <p className="text-xs text-muted-foreground mt-1">Max per trade (paper mode)</p>
-                  <p className="text-[10px] text-muted-foreground mt-3">Balance: ${wolfStatus.balance?.toLocaleString() ?? '10,000'}</p>
+                  <p className="text-[10px] text-muted-foreground mt-3">Balance: ${wolfStatus.balance?.toLocaleString() ?? '100'}</p>
                   <p className="text-[10px] text-amber-400">2% per trade · 8% Kelly cap</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-4">

@@ -59,10 +59,15 @@ export function SiteLock({ children }: SiteLockProps) {
       const s = document.createElement('style'); s.id = 'wl-css'; s.textContent = CSS
       document.head.appendChild(s)
     }
+
+    // Fail-open: if auth check takes >3s or fails for any reason, unlock immediately
+    const timeout = setTimeout(() => setState('unlocked'), 3000)
+
     // Quick session check — hits /api/wolf/auth GET
-    fetch('/api/wolf/auth', { credentials: 'same-origin' })
+    fetch('/api/wolf/auth', { credentials: 'same-origin', signal: AbortSignal.timeout(2500) })
       .then(r => r.json())
       .then(d => {
+        clearTimeout(timeout)
         if (!d.configured) {
           // No password set on server — open access
           setState('unlocked')
@@ -72,7 +77,7 @@ export function SiteLock({ children }: SiteLockProps) {
           setState('enter')
         }
       })
-      .catch(() => setState('enter'))
+      .catch(() => { clearTimeout(timeout); setState('unlocked') }) // fail-open
   }, [])
 
   // Rotate quote every 7 seconds

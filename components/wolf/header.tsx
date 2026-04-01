@@ -111,7 +111,7 @@ export function Header({ wolfStatus, onRefresh, isConnected }: HeaderProps) {
             <div className="hidden sm:flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 border border-amber-500/20">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Balance</span>
               <span className="font-mono text-sm font-black text-amber-400">
-                ${(wolfStatus.balance ?? 10000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${(wolfStatus.balance ?? 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${wolfStatus.paperMode !== false ? 'bg-zinc-700 text-zinc-400' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse'}`}>
                 {wolfStatus.paperMode !== false ? 'PAPER' : 'LIVE'}
